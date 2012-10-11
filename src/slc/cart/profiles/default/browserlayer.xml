@@ -1,0 +1,6 @@
+<layers>
+  <layer
+    name="slc.cart"
+    interface="slc.cart.interfaces.ISlcCartLayer"
+  />
+</layers>
