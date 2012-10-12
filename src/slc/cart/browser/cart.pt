@@ -1,0 +1,73 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+      lang="en"
+      metal:use-macro="context/main_template/macros/master">
+<body>
+
+<metal:block fill-slot="top_slot"
+             tal:define="disable_border python:request.set('disable_border',1);
+                         disable_column_one python:request.set('disable_plone.leftcolumn',1);
+                         disable_column_two python:request.set('disable_plone.rightcolumn',1);" />
+
+<metal:main fill-slot="main">
+    <tal:main-macro metal:define-macro="main">
+
+        <div tal:replace="structure provider:plone.abovecontenttitle" />
+
+        <h1 class="documentFirstHeading">Cart</h1>
+
+        <div tal:condition="not: view/items">
+            You have not added any items to your cart yet.
+            <a href="#" tal:attributes="href string:${context/portal_url}/@@search">Find an item</a>
+            and click 'Add this item to your cart!'. Or click 'Add to cart'
+            on item's view.
+        </div>
+
+        <div tal:condition="view/items">
+            <p class="discreet">
+                You can click on table headings to sort items.
+            </p>
+
+            <table class="listing" id="cart-list" summary="Lists files in user's cart"
+                   tal:define="toLocalizedTime nocall: context/@@plone/toLocalizedTime;">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Remove from cart</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr tal:repeat="item view/items">
+                        <td>
+                            <a href="#" tal:attributes="href string:${item/getURL}/view"
+                                        tal:content="item/Title" />
+                        </td>
+                        <td>
+                            <a href="#" class="remove-from-cart"
+                               tal:attributes="href string:${context/portal_url}/cart?remove=${item/UID}">
+                                <img src="delete_icon.gif" alt="remove"/> remove
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!--a href="#" class="download-button button"
+               title="ZIP archive of all items in your download cart!"
+               tal:attributes="href string:${context/portal_url}/cart?download=1&format=normal">
+                   Download Items
+            </a-->
+            <a href="#" class="clear-cart-button" id="clear-cart" tal:attributes="href string:${context/portal_url}/cart?clear=1">
+                Clear your cart.
+            </a>
+        </div>
+
+        <div tal:replace="structure provider:plone.belowcontentbody" />
+
+    </tal:main-macro>
+</metal:main>
+
+</body>
+</html>

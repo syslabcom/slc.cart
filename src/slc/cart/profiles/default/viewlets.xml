@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<object>
+
+  <!-- Hide live-search viewlet -->
+  <hidden manager="plone.portalheader" skinname="*">
+    <viewlet name="plone.searchbox"/>
+  </hidden>
+
+</object>

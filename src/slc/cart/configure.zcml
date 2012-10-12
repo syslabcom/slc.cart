@@ -19,6 +19,11 @@
     <!-- Register all components defined with grok -->
     <grok:grok package="." />
 
+    <!-- Enable IAnnotations to be stored on Member objects -->
+    <class class="Products.CMFCore.MemberDataTool.MemberData">
+        <implements interface="zope.annotation.interfaces.IAttributeAnnotatable" />
+    </class>
+
     <!-- Register the installation GenericSetup extension profile -->
     <genericsetup:registerProfile
         name="default"

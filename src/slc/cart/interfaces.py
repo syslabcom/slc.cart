@@ -6,3 +6,8 @@ from plone.theme.interfaces import IDefaultPloneLayer
 
 class ISlcCartLayer(IDefaultPloneLayer):
     """Marker interface that defines a Zope 3 browser layer."""
+
+
+# Exceptions
+class NoResultError(Exception):
+    """Exception if catalog returns zero results."""
