@@ -77,7 +77,7 @@ class TestInstall(IntegrationTestCase):
         self.assertEquals(len(document_actions), 5)
 
         titles = [a.title for a in document_actions]
-        self.assertIn('Add to cart', titles)
+        self.assertIn('Add to Cart', titles)
 
 
 def test_suite():
