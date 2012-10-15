@@ -61,15 +61,23 @@ class TestInstall(IntegrationTestCase):
             str(memberdata.getProperty('cart').__class__), "<type 'tuple'>")
 
     # actions.xml
-    def test_cart_action_added(self):
-        """Test if cart action is added to user actions."""
+    def test_cart_actions_added(self):
+        """Test if cart actions are added to user and document actions."""
         actions_tool = getToolByName(self.portal, 'portal_actions')
 
-        actions = actions_tool.user.listActions()
-        self.assertEquals(len(actions), 9)
+        # Check if 'Cart' has been added to user actions
+        user_actions = actions_tool.user.listActions()
+        self.assertEquals(len(user_actions), 9)
 
-        titles = [a.title for a in actions]
+        titles = [a.title for a in user_actions]
         self.assertIn('Cart', titles)
+
+        # Check if 'Add to cart' has been added to document actions
+        document_actions = actions_tool.document_actions.listActions()
+        self.assertEquals(len(document_actions), 5)
+
+        titles = [a.title for a in document_actions]
+        self.assertIn('Add to cart', titles)
 
 
 def test_suite():
