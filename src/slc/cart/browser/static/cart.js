@@ -77,7 +77,7 @@
                 } else {
                     $numSpan = $("<span class='num-count'></span>");
                     $numSpan.text(' (' + data + ')');
-                    $numSpan.appendTo($("#portaltab-cart > a"));
+                    $numSpan.appendTo($("#personaltools-cart > a"));
                 }
             }
         });
