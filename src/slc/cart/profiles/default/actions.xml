@@ -10,7 +10,7 @@
  </object>
  <object name="document_actions" meta_type="CMF Action Category">
   <object name="add_to_cart" meta_type="CMF Action">
-   <property name="title">Add to cart</property>
+   <property name="title">Add to Cart</property>
    <property
       name="url_expr">string: ${context/portal_url}/cart?add=${context/UID}</property>
    <property name="link_target"></property>
