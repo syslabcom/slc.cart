@@ -20,9 +20,12 @@
 
         <div tal:condition="not: view/items">
             You have not added any items to your cart yet.
-            <a href="#" tal:attributes="href string:${context/portal_url}/@@search">Find an item</a>
-            and click 'Add this item to your cart!'. Or click 'Add to cart'
-            on item's view.
+            <a href="#"
+               tal:attributes="href string:${context/portal_url}/@@search">
+                Find an item
+            </a>
+            and click on the cart icon to add it to cart. You can also click
+            on 'Add to Cart' link when viewing an item.
         </div>
 
         <div tal:condition="view/items">
