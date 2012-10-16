@@ -65,19 +65,19 @@ class TestInstall(IntegrationTestCase):
         """Test if cart actions are added to user and document actions."""
         actions_tool = getToolByName(self.portal, 'portal_actions')
 
-        # Check if 'Cart' has been added to user actions
+        # Check if 'cart' has been added to user actions
         user_actions = actions_tool.user.listActions()
         self.assertEquals(len(user_actions), 9)
 
-        titles = [a.title for a in user_actions]
-        self.assertIn('Cart', titles)
+        ids = [a.getId() for a in user_actions]
+        self.assertIn('cart', ids)
 
-        # Check if 'Add to cart' has been added to document actions
+        # Check if 'add_to_cart' has been added to document actions
         document_actions = actions_tool.document_actions.listActions()
         self.assertEquals(len(document_actions), 5)
 
-        titles = [a.title for a in document_actions]
-        self.assertIn('Add to Cart', titles)
+        ids = [a.getId() for a in document_actions]
+        self.assertIn('add_to_cart', ids)
 
 
 def test_suite():

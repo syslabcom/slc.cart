@@ -18,8 +18,8 @@
                            tal:attributes="href daction/url;
                                            target daction/link_target|nothing;
                                            title daction/description;
-                                           id python: 'cart' in action_id and action_id;
-                                           rel python: 'cart' in action_id and context.UID();"
+                                           id python: action_id == 'add_to_cart' and 'add-to-cart';
+                                           rel python: action_id == 'add_to_cart' and context.UID();"
                            tal:content="daction/title">
                         </a>
                     </li>
