@@ -30,7 +30,7 @@ class CartView(BrowserView):
             'remove',
             'clear',
             'download',
-            #'is-item-in-cart',
+            'contains',
         )
 
         # if query string is provided, call given method
@@ -86,18 +86,16 @@ class CartView(BrowserView):
         """
         return len(self.get_cart())
 
-    # def is_item_in_cart(self):
-    #     """TODO:
+    def contains(self, UID=None):
+        """Check if an item exists in the cart.
 
-    #     :returns: Boolean describing if item exists in logged in user's cart.
-    #     :rtype: json bool
-    #     """
-    #     UID = self.request.get('is-item-in-cart')
-    #     UIDs = self.get_cart()
+        :return: Boolean describing if item exists in logged in user's cart.
+        :rtype: json bool
+        """
+        UID = UID or self.request.get('contains')
+        cart = self.get_cart()
 
-    #     return 'true' if UID in UIDs else 'false'
-
-    ### Cart items management
+        return str(UID in cart).lower()
 
     def add(self, UID=None):
         """A method for adding items to cart.
