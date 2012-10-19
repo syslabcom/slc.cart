@@ -40,82 +40,87 @@ class CartView(BrowserView):
 
         return self.template()
 
+    def _get_brain_by_UID(self, UID):
+        """Return portal_catalog brains metadata of an item with the specified
+        UID.
+
+        :param UID: Unique ID of an item.
+        :type UID: string
+        :returns: Brain (metadata) of item of passed UID.
+        :rtype: Brain
+
+        """
+        catalog = api.portal.get_tool('portal_catalog')
+        brains = catalog(UID=UID)
+
+        return brains[0] if brains else None
+
     def get_cart(self):
         """TODO"""
         # get the zope.annotations object stored on current member object
         annotations = IAnnotations(api.user.get_current())
-
-        # handle first access
-        if not isinstance(annotations, dict):
-            annotations.setdefault('cart', set())
-
-        return annotations['cart']
+        return annotations.setdefault('cart', set())
 
     def items(self):
-        """
-        :returns: Returns Brains (metadata) of items in user's cart.
+        """TODO:
+
+        :returns: Return Brains (metadata) of items in user's cart.
         :rtype: list of Brains
         """
-
-        # get UIDs
-        UIDs = self.get_cart()
-
-        # fetch Catalog Brains for UIDs
         items = []
-        for UID in UIDs:
-
-            try:
-                brain = self._get_item_brain_by_UID(UID)
-            except NoResultError as e:
-                logger.warn(e.message)
-                continue
-
-            items.append(brain)
+        for UID in self.get_cart():
+            brain = self._get_brain_by_UID(UID)
+            if brain:
+                items.append(brain)
+            else:
+                msg = "An item in cart (UID: {0}) not found in the catalog."
+                logger.warn(NoResultError(msg.formtat(UID)))
 
         return items
 
-    def num_of_items(self):
-        """
+    def item_count(self):
+        """TODO:
+
         :returns: Number of items in cart.
         :rtype: int
         """
-        return str(len(self.get_cart()))
+        return len(self.get_cart())
 
-    def is_item_in_cart(self):
-        """
-        :returns: Boolean describing if item exists in logged in user's cart.
-        :rtype: json bool
-        """
-        UID = self.request.get('is-item-in-cart')
-        UIDs = self.get_cart()
+    # def is_item_in_cart(self):
+    #     """TODO:
 
-        return 'true' if UID in UIDs else 'false'
+    #     :returns: Boolean describing if item exists in logged in user's cart.
+    #     :rtype: json bool
+    #     """
+    #     UID = self.request.get('is-item-in-cart')
+    #     UIDs = self.get_cart()
+
+    #     return 'true' if UID in UIDs else 'false'
 
     ### Cart items management
 
     def add(self, UID=None):
-        """
-        A method for adding items to cart.
+        """A method for adding items to cart.
 
         :param UID: Unique ID of an item.
         :type UID: string
-        :returns: Normal request: A 'cart.pt' ViewPageTemplateFile which
+        :return: Normal request: A 'cart.pt' ViewPageTemplateFile which
             renders a normal Plone view.
-        :returns: AJAX request: JSON response whether an item was successfull
+        :return: AJAX request: JSON response whether an item was successfull
             added or not.
         :rtype: ViewPageTemplateFile or JSON response
         """
         UID = UID or self.request.get('add')
         cart = self.get_cart()
 
-        try:
-            UID = api.content.get(uid=UID)  # check if this is a valid UID
+        if self._get_brain_by_UID(UID):
             cart.add(UID)
-            status = True
-            message = "Item added to cart."
-        except ValueError:
-            status = False
-            message = "Item does not exist."
+            # status = True
+            # message = "Item added to cart."
+        else:
+            pass
+            # status = False
+            #message = "Item does not exist."
 
         # TODO
 
@@ -160,18 +165,17 @@ class CartView(BrowserView):
 
     #     return self.template()
 
-    # def clear(self):
-    #     """
-    #     Removes all items from cart.
+    def clear(self):
+        """
+        Removes all items from cart.
 
-    #     :returns: A 'cart.pt' ViewPageTemplateFile which renders a normal
-    #         Plone view.
-    #     :rtype: ViewPageTemplateFile
-    #     """
-    #     member = api.user.get_current()
-
-    #     member.setMemberProperties({'cart': tuple()})
-    #     return self.template()
+        :returns: A 'cart.pt' ViewPageTemplateFile which renders a normal
+            Plone view.
+        :rtype: ViewPageTemplateFile
+        """
+        annotations = IAnnotations(api.user.get_current())
+        annotations.setdefault('cart', set())
+        return self.template()
 
     # def download(self):
     #     """
