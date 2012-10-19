@@ -23,14 +23,4 @@
        layer="..interfaces.ISlcCartLayer"
        />
 
-    <!-- Add support for "add to cart" -->
-    <browser:page
-      for="*"
-      name="search"
-      class="plone.app.search.browser.Search"
-      permission="zope2.View"
-      template="search.pt"
-      layer="..interfaces.ISlcCartLayer"
-      />
-
 </configure>
