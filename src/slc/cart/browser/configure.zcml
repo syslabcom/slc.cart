@@ -14,13 +14,4 @@
        directory="static"
        />
 
-    <!-- Cart items for batch downloading -->
-    <browser:page
-       for="Products.CMFPlone.interfaces.IPloneSiteRoot"
-       name="cart"
-       class=".cart.CartView"
-       permission="zope2.View"
-       layer="..interfaces.ISlcCartLayer"
-       />
-
 </configure>

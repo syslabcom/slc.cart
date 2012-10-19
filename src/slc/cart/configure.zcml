@@ -16,13 +16,16 @@
     <!-- Include sub-packages that use their own configure.zcml files. -->
     <include package=".browser" />
 
-    <!-- Register all components defined with grok -->
-    <grok:grok package="." />
-
     <!-- Enable IAnnotations to be stored on Member objects -->
     <class class="Products.CMFCore.MemberDataTool.MemberData">
         <implements interface="zope.annotation.interfaces.IAttributeAnnotatable" />
     </class>
+
+    <!-- Register a new permission for using the cart -->
+    <permission id="slc.cart" title="slc.cart: Use cart" />
+
+    <!-- Register all components defined with grok -->
+    <grok:grok package="." />
 
     <!-- Register the installation GenericSetup extension profile -->
     <genericsetup:registerProfile
