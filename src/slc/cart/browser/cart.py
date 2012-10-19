@@ -25,12 +25,12 @@ class CartView(BrowserView):
         """
 
         supported_methods = (
-            'num-of-items',
+            'item-count',
             'add',
             'remove',
             'clear',
             'download',
-            'is-item-in-cart',
+            #'is-item-in-cart',
         )
 
         # if query string is provided, call given method
@@ -118,7 +118,7 @@ class CartView(BrowserView):
             # status = True
             # message = "Item added to cart."
         else:
-            pass
+            pass  # TODO: handling for this case ...
             # status = False
             #message = "Item does not exist."
 
@@ -141,40 +141,31 @@ class CartView(BrowserView):
 
         return self.template()
 
-    # def remove(self):
-    #     """
-    #     A method for removing items from cart.
+    def remove(self, UID=None):
+        """
+        A method for removing items from cart.
 
-    #     :returns: A 'cart.pt' ViewPageTemplateFile which renders a normal
-    #         Plone view.
-    #     :rtype: ViewPageTemplateFile
-    #     """
-    #     member = api.user.get_current()
+        :return: A 'cart.pt' ViewPageTemplateFile which renders a normal
+            Plone view.
+        :rtype: ViewPageTemplateFile
+        """
+        UID = UID or self.request.get('remove')
+        cart = self.get_cart()
+        cart.discard(UID)
 
-    #     UID = self.request.get('remove')
-    #     cart = list(member.getProperty('cart', ()))
-
-    #     if not UID in cart:
-    #         status = False
-    #         message = "Item not in cart."
-    #     else:
-    #         cart.remove(UID)
-    #         member.setMemberProperties({'cart': tuple(cart)})
-    #         status = True
-    #         message = "Item removed from cart."
-
-    #     return self.template()
+        return self.template()
 
     def clear(self):
         """
-        Removes all items from cart.
+        Remove all items from cart.
 
-        :returns: A 'cart.pt' ViewPageTemplateFile which renders a normal
+        :return: A 'cart.pt' ViewPageTemplateFile which renders a normal
             Plone view.
         :rtype: ViewPageTemplateFile
         """
         annotations = IAnnotations(api.user.get_current())
-        annotations.setdefault('cart', set())
+        annotations['cart'] = set()
+
         return self.template()
 
     # def download(self):
