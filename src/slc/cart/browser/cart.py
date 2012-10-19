@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """Download cart for batch processing of items."""
 
+from zope.annotation.interfaces import IAnnotations
 from plone import api
 from Products.Five.browser import BrowserView
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 from slc.cart.interfaces import NoResultError
 from StringIO import StringIO
 
-import json
 import logging
 import zipfile
 
@@ -15,15 +15,7 @@ logger = logging.getLogger("slc.cart")
 
 
 class CartView(BrowserView):
-    """A BrowserView for listing and adding items to cart.
-
-    - display items in cart: http://localhost:8080/dev/cart
-    - add item to cart: http://localhost:8080/dev/cart?add=ecd1ca19a11327b8188f0d35c0b4e5c6
-    - remove item from cart: http://localhost:8080/dev/cart?remove=ecd1ca19a11327b8188f0d35c0b4e5c6
-    - get number of items in cart: http://localhost:8080/dev/cart?num-of-items=1
-    - download ZIP file of all items in the cart: http://localhost:8080/dev/cart?download=1
-    - remove all items from cart: http://localhost:8080/dev/cart?clear=1
-    """
+    """A BrowserView for listing and adding items to cart."""
 
     template = ViewPageTemplateFile('cart.pt')
 
@@ -31,15 +23,6 @@ class CartView(BrowserView):
         """Request controller. It routes different types of @@cart requests to
         their dedicated handler methods.
         """
-        if api.user.is_anonymous():
-            self.request.RESPONSE.redirect(
-                self.context.absolute_url() + '/login_form'
-            )
-            return
-
-        # TODO: separate ajax and normal template logic completely (maybe some
-        # addon product to handle this easier?)
-        # TODO: refactor add/remove to share the same code
 
         supported_methods = (
             'num-of-items',
@@ -57,27 +40,16 @@ class CartView(BrowserView):
 
         return self.template()
 
-    def _get_item_brain_by_UID(self, UID):
-        """
-        Returns portal_catalog brains metadata of an item with the passed UID.
+    def get_cart(self):
+        """TODO"""
+        # get the zope.annotations object stored on current member object
+        annotations = IAnnotations(api.user.get_current())
 
-        :param UID: Unique ID of an item.
-        :type UID: string
-        :raises NoResultError: No item found with this UID.
-        :returns: Brain (metadata) of item of passed UID.
-        :rtype: Brain
-        """
+        # handle first access
+        if not isinstance(annotations, dict):
+            annotations.setdefault('cart', set())
 
-        if not UID:
-            raise NoResultError
-
-        catalog = api.portal.get_tool('portal_catalog')
-        brains = catalog(UID=UID)
-
-        if not brains:
-            raise NoResultError("No item found with this UID: %r" % UID)
-
-        return brains[0]
+        return annotations['cart']
 
     def items(self):
         """
@@ -86,8 +58,7 @@ class CartView(BrowserView):
         """
 
         # get UIDs
-        member = api.user.get_current()
-        UIDs = member.getProperty('cart', ())
+        UIDs = self.get_cart()
 
         # fetch Catalog Brains for UIDs
         items = []
@@ -108,18 +79,15 @@ class CartView(BrowserView):
         :returns: Number of items in cart.
         :rtype: int
         """
-        member = api.user.get_current()
-        return str(len(member.getProperty('cart', ())))
+        return str(len(self.get_cart()))
 
     def is_item_in_cart(self):
         """
         :returns: Boolean describing if item exists in logged in user's cart.
         :rtype: json bool
         """
-        member = api.user.get_current()
-
         UID = self.request.get('is-item-in-cart')
-        UIDs = member.getProperty('cart', ())
+        UIDs = self.get_cart()
 
         return 'true' if UID in UIDs else 'false'
 
@@ -137,122 +105,118 @@ class CartView(BrowserView):
             added or not.
         :rtype: ViewPageTemplateFile or JSON response
         """
-        member = api.user.get_current()
-
         UID = UID or self.request.get('add')
-        cart = list(member.getProperty('cart', ()))
-
-        if UID in cart:
-            status = False
-            message = "Item already in cart."
-        else:
-            try:
-                self._get_item_brain_by_UID(UID)
-            except NoResultError:
-                status = False
-                message = "Item does not exist."
-            else:
-                cart.append(UID)
-                member.setMemberProperties({'cart': tuple(cart)})
-                status = True
-                message = "Item added to cart."
-
-        return self._handle_ajax(status, message)
-
-    def remove(self):
-        """
-        A method for removing items from cart.
-
-        :returns: A 'cart.pt' ViewPageTemplateFile which renders a normal
-            Plone view.
-        :rtype: ViewPageTemplateFile
-        """
-        member = api.user.get_current()
-
-        UID = self.request.get('remove')
-        cart = list(member.getProperty('cart', ()))
-
-        if not UID in cart:
-            status = False
-            message = "Item not in cart."
-        else:
-            cart.remove(UID)
-            member.setMemberProperties({'cart': tuple(cart)})
-            status = True
-            message = "Item removed from cart."
-
-        return self._handle_ajax(status, message)
-
-    def _handle_ajax(self, status, message):
-        # On AJAX request return JSON response, else return normal Plone
-        # template
-        if self.request.get('HTTP_X_REQUESTED_WITH', None) == 'XMLHttpRequest':
-            return json.dumps({'return_status': status, 'message': message})
-        else:
-            api.portal.show_message(
-                message=message,
-                type=status and 'info' or 'error',
-                request=self.request,
-            )
-            return self.template()
-
-    def clear(self):
-        """
-        Removes all items from cart.
-
-        :returns: A 'cart.pt' ViewPageTemplateFile which renders a normal
-            Plone view.
-        :rtype: ViewPageTemplateFile
-        """
-        member = api.user.get_current()
-
-        member.setMemberProperties({'cart': tuple()})
-        return self.template()
-
-    def download(self):
-        """
-        :type format: string
-        :returns: A stream of binary data of a ZIP file of all items in the
-            cart.
-        :rtype: StringIO binary stream
-        """
-        member = api.user.get_current()
-
-        output = StringIO()
-        zf = zipfile.ZipFile(output, mode='w')
-
-        if not member.getProperty('cart'):
-            api.portal.show_message(
-                message=u"Cart is empty.",
-                type="error",
-                request=self.request,
-            )
-            return self.template()
+        cart = self.get_cart()
 
         try:
-            for UID in member.getProperty('cart'):
+            UID = api.content.get(uid=UID)  # check if this is a valid UID
+            cart.add(UID)
+            status = True
+            message = "Item added to cart."
+        except ValueError:
+            status = False
+            message = "Item does not exist."
 
-                try:
-                    brain = self._get_item_brain_by_UID(UID)
-                except NoResultError as e:
-                    logger.warn(e.message)
-                    continue
+        # TODO
 
-                item = brain.getObject()
+        # if UID in cart:
+        #     status = False
+        #     message = "Item already in cart."
+        # else:
+        #     try:
+        #         self._get_item_brain_by_UID(UID)
+        #     except NoResultError:
+        #         status = False
+        #         message = "Item does not exist."
+        #     else:
+        #         cart.append(UID)
+        #         member.setMemberProperties({'cart': tuple(cart)})
+        #         status = True
+        #         message = "Item added to cart."
 
-                zf.writestr(
-                    "Cart Download Pack/%s.txt" % (item.title),
-                    item.data
-                )
-        finally:
-            zf.close()
+        return self.template()
 
-        self.context.REQUEST.response.setHeader(
-            "Content-Type",
-            "application/zip"
-        )
-        self.context.REQUEST.response.setHeader(
-            'Content-Disposition',
-            "attachment; filename=cart.zip"
-        )
-        return output.getvalue()
+    # def remove(self):
+    #     """
+    #     A method for removing items from cart.
+
+    #     :returns: A 'cart.pt' ViewPageTemplateFile which renders a normal
+    #         Plone view.
+    #     :rtype: ViewPageTemplateFile
+    #     """
+    #     member = api.user.get_current()
+
+    #     UID = self.request.get('remove')
+    #     cart = list(member.getProperty('cart', ()))
+
+    #     if not UID in cart:
+    #         status = False
+    #         message = "Item not in cart."
+    #     else:
+    #         cart.remove(UID)
+    #         member.setMemberProperties({'cart': tuple(cart)})
+    #         status = True
+    #         message = "Item removed from cart."
+
+    #     return self.template()
+
+    # def clear(self):
+    #     """
+    #     Removes all items from cart.
+
+    #     :returns: A 'cart.pt' ViewPageTemplateFile which renders a normal
+    #         Plone view.
+    #     :rtype: ViewPageTemplateFile
+    #     """
+    #     member = api.user.get_current()
+
+    #     member.setMemberProperties({'cart': tuple()})
+    #     return self.template()
+
+    # def download(self):
+    #     """
+    #     :type format: string
+    #     :returns: A stream of binary data of a ZIP file of all items in the
+    #         cart.
+    #     :rtype: StringIO binary stream
+    #     """
+    #     member = api.user.get_current()
+
+    #     output = StringIO()
+    #     zf = zipfile.ZipFile(output, mode='w')
+
+    #     if not member.getProperty('cart'):
+    #         api.portal.show_message(
+    #             message=u"Cart is empty.",
+    #             type="error",
+    #             request=self.request,
+    #         )
+    #         return self.template()
+
+    #     try:
+    #         for UID in member.getProperty('cart'):
+
+    #             try:
+    #                 brain = self._get_item_brain_by_UID(UID)
+    #             except NoResultError as e:
+    #                 logger.warn(e.message)
+    #                 continue
+
+    #             item = brain.getObject()
+
+    #             zf.writestr(
+    #                 "Cart Download Pack/%s.txt" % (item.title),
+    #                 item.data
+    #             )
+    #     finally:
+    #         zf.close()
+
+    #     self.context.REQUEST.response.setHeader(
+    #         "Content-Type",
+    #         "application/zip"
+    #     )
+    #     self.context.REQUEST.response.setHeader(
+    #         'Content-Disposition',
+    #         "attachment; filename=cart.zip"
+    #     )
+    #     return output.getvalue()
