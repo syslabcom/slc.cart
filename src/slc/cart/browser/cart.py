@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 """Download cart for batch processing of items."""
 
-from zope.annotation.interfaces import IAnnotations
+from collections import namedtuple
 from plone import api
 from Products.Five.browser import BrowserView
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 from slc.cart.interfaces import NoResultError
-from StringIO import StringIO
+from zope.annotation.interfaces import IAnnotations
 
+import json
 import logging
-import zipfile
 
 logger = logging.getLogger("slc.cart")
 
@@ -18,6 +18,9 @@ class CartView(BrowserView):
     """A BrowserView for listing and adding items to cart."""
 
     template = ViewPageTemplateFile('cart.pt')
+
+    STATUS = namedtuple('STATUS', ['OK', 'ERROR'])(*range(2))
+    """Response status codes."""
 
     def __call__(self):
         """Request controller. It routes different types of @@cart requests to
@@ -55,7 +58,7 @@ class CartView(BrowserView):
 
         return brains[0] if brains else None
 
-    def get_cart(self):
+    def _get_cart(self):
         """TODO"""
         # get the zope.annotations object stored on current member object
         annotations = IAnnotations(api.user.get_current())
@@ -68,7 +71,7 @@ class CartView(BrowserView):
         :rtype: list of Brains
         """
         items = []
-        for UID in self.get_cart():
+        for UID in self._get_cart():
             brain = self._get_brain_by_UID(UID)
             if brain:
                 items.append(brain)
@@ -76,26 +79,28 @@ class CartView(BrowserView):
                 msg = "An item in cart (UID: {0}) not found in the catalog."
                 logger.warn(NoResultError(msg.formtat(UID)))
 
-        return items
+        return self._prepare_response(self.STATUS.OK, items)
 
     def item_count(self):
-        """TODO:
+        """Return the number of items currently in cart.
 
-        :returns: Number of items in cart.
-        :rtype: int
+        :return: The number of items currently in cart.
+        :rtype: ViewPageTemplateFile or JSON response
         """
-        return len(self.get_cart())
+        count = len(self._get_cart())
+        return self._prepare_response(self.STATUS.OK, count)
 
     def contains(self, UID=None):
         """Check if an item exists in the cart.
 
         :return: Boolean describing if item exists in logged in user's cart.
-        :rtype: json bool
+        :rtype: ViewPageTemplateFile or JSON response
         """
         UID = UID or self.request.get('contains')
-        cart = self.get_cart()
+        cart = self._get_cart()
 
-        return str(UID in cart).lower()
+        response_body = (UID in cart)
+        return self._prepare_response(self.STATUS.OK, response_body)
 
     def add(self, UID=None):
         """A method for adding items to cart.
@@ -104,40 +109,19 @@ class CartView(BrowserView):
         :type UID: string
         :return: Normal request: A 'cart.pt' ViewPageTemplateFile which
             renders a normal Plone view.
-        :return: AJAX request: JSON response whether an item was successfull
-            added or not.
+        :return: AJAX request: JSON response describing whether the item
+            was added or not (an item might not be added if it can't be found
+            in the database)
         :rtype: ViewPageTemplateFile or JSON response
         """
         UID = UID or self.request.get('add')
-        cart = self.get_cart()
+        cart = self._get_cart()
 
         if self._get_brain_by_UID(UID):
             cart.add(UID)
-            # status = True
-            # message = "Item added to cart."
+            return self._prepare_response(self.STATUS.OK, True)
         else:
-            pass  # TODO: handling for this case ...
-            # status = False
-            #message = "Item does not exist."
-
-        # TODO
-
-        # if UID in cart:
-        #     status = False
-        #     message = "Item already in cart."
-        # else:
-        #     try:
-        #         self._get_item_brain_by_UID(UID)
-        #     except NoResultError:
-        #         status = False
-        #         message = "Item does not exist."
-        #     else:
-        #         cart.append(UID)
-        #         member.setMemberProperties({'cart': tuple(cart)})
-        #         status = True
-        #         message = "Item added to cart."
-
-        return self.template()
+            return self._prepare_response(self.STATUS.OK, False)
 
     def remove(self, UID=None):
         """
@@ -145,13 +129,13 @@ class CartView(BrowserView):
 
         :return: A 'cart.pt' ViewPageTemplateFile which renders a normal
             Plone view.
-        :rtype: ViewPageTemplateFile
+        :rtype: ViewPageTemplateFile or JSON response
         """
         UID = UID or self.request.get('remove')
-        cart = self.get_cart()
+        cart = self._get_cart()
         cart.discard(UID)
 
-        return self.template()
+        return self._prepare_response(self.STATUS.OK)
 
     def clear(self):
         """
@@ -159,12 +143,36 @@ class CartView(BrowserView):
 
         :return: A 'cart.pt' ViewPageTemplateFile which renders a normal
             Plone view.
-        :rtype: ViewPageTemplateFile
+        :rtype: ViewPageTemplateFile or JSON response
         """
         annotations = IAnnotations(api.user.get_current())
         annotations['cart'] = set()
 
-        return self.template()
+        return self._prepare_response(self.STATUS.OK)
+
+    def _prepare_response(self, status, body=None):
+        """Prepare response based on the request type (AJAX, non-AJAX).
+
+        On AJAX request return a JSON-formatted response, otherwise return
+        a normal Plone response - a ViewPageTemplateFile.
+
+        :param status: status code indicating whether a request was
+            successfully processed or not
+        :type status: int
+        :param body: the body of the response
+        :type body: any JSON-serializable type
+        :return: A 'cart.pt' ViewPageTemplateFile which renders a normal
+            Plone view or a response formatted as a JSON string.
+        :rtype: ViewPageTemplateFile or string
+        """
+        if body is None:
+            body = ""
+
+        if self.request.get('HTTP_X_REQUESTED_WITH', None) == 'XMLHttpRequest':
+            response_dict = dict(status=status, body=body)
+            return json.dumps(response_dict)
+        else:
+            return self.template()
 
     # def download(self):
     #     """
