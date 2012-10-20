@@ -5,9 +5,10 @@ from Products.CMFCore.interfaces import IContentish
 from collections import namedtuple
 from five import grok
 from plone import api
-from plone.app.layout.navigation.interfaces import INavigationRoot
 from slc.cart.interfaces import NoResultError
 from zope.annotation.interfaces import IAnnotations
+from Products.Five.browser import BrowserView
+from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 
 import json
 import logging
@@ -19,12 +20,14 @@ STATUS = namedtuple('STATUS', ['OK', 'ERROR'])(*range(2))
 """Response status codes."""
 
 
-class Cart(grok.View):
+class CartView(BrowserView):
     """A BrowserView for listing items in cart."""
 
-    grok.context(INavigationRoot)
-    grok.require('slc.cart')
-    #TODO: this requires grokcore.view > 2: grok.traversable('clear')
+    template = ViewPageTemplateFile('cart.pt')
+
+    def __call__(self):
+        """Must be here as a convention."""
+        return self.template()
 
     def _get_brain_by_UID(self, UID):
         """Return portal_catalog brains metadata of an item with the specified
@@ -65,39 +68,33 @@ class Cart(grok.View):
 
         return items
 
-    # def item_count(self):
-    #     """Return the number of items currently in cart.
+    def item_count(self):
+        """Return the number of items currently in cart.
 
-    #     :return: The number of items currently in cart.
-    #     :rtype: ViewPageTemplateFile or JSON response
-    #     """
-    #     count = len(self._get_cart())
-    #     return self._prepare_response(self.STATUS.OK, count)
+        :return: The number of items currently in cart.
+        :rtype: int
 
-    # def contains(self, UID=None):
-    #     """Check if an item exists in the cart.
-
-    #     :return: Boolean describing if item exists in logged in user's cart.
-    #     :rtype: ViewPageTemplateFile or JSON response
-    #     """
-    #     UID = UID or self.request.get('contains')
-    #     cart = self._get_cart()
-
-    #     response_body = (UID in cart)
-    #     return self._prepare_response(self.STATUS.OK, response_body)
+        """
+        return len(self._get_cart())
 
     def clear(self):
-        """
-        Remove all items from cart.
+        """Remove all items from cart and display the @@cart view or return
+        OK when requested via AJAX.
+
+        This method is accessable via URL traversal (@@cart/clear).
 
         :return: A 'cart.pt' ViewPageTemplateFile which renders a normal
-            Plone view.
+            Plone view or a JSON status.OK
         :rtype: ViewPageTemplateFile or JSON response
+
         """
         annotations = IAnnotations(api.user.get_current())
         annotations['cart'] = set()
 
-        return self._prepare_response(self.STATUS.OK)
+        if self.request.get('HTTP_X_REQUESTED_WITH', None) == 'XMLHttpRequest':
+            return json.dumps(STATUS.OK)
+        else:
+            return self.template()
 
 
 class AddToCart(grok.View):
@@ -137,7 +134,7 @@ class RemoveFromCart(grok.View):
 
 
 class IsInCart(grok.View):
-    """A BrowserView for checking in an item is already in the cart."""
+    """A BrowserView for checking if an item is already in the cart."""
 
     grok.context(IContentish)
     grok.require('slc.cart')
