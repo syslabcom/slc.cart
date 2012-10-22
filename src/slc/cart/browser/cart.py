@@ -64,7 +64,7 @@ class CartView(BrowserView):
                 items.append(brain)
             else:
                 msg = "An item in cart (UID: {0}) not found in the catalog."
-                logger.warn(NoResultError(msg.formtat(UID)))
+                logger.warn(NoResultError(msg.format(UID)))
 
         return items
 
@@ -75,7 +75,7 @@ class CartView(BrowserView):
         :rtype: int
 
         """
-        return len(self._get_cart())
+        return len(self.cart)
 
     def clear(self):
         """Remove all items from cart and display the @@cart view or return
@@ -92,7 +92,7 @@ class CartView(BrowserView):
         annotations['cart'] = set()
 
         if self.request.get('HTTP_X_REQUESTED_WITH', None) == 'XMLHttpRequest':
-            return json.dumps(STATUS.OK)
+            return json.dumps(STATUS.OK)  # TODO: rewrite so thatou get a proper json dict! (status, body, err_msg)
         else:
             return self.template()
 
@@ -147,3 +147,5 @@ class IsInCart(grok.View):
 
         if self.request.get('HTTP_X_REQUESTED_WITH', None) == 'XMLHttpRequest':
             return json.dumps(UID in cart)
+        # NOTE: else simply don't return anything, because it's not meant
+        # to be used for non-AJAX requests anyway

@@ -35,15 +35,15 @@ class TestCart(IntegrationTestCase):
         self.item3 = api.content.create(
             container=self.portal, type='Document', id='item3')
 
-    def _add_to_cart(self, uid):
-        """A helper method to add item to cart."""
-        self.portal.REQUEST["add"] = uid
-        return self.view.add()
+    #def _add_to_cart(self, uid):
+        #"""A helper method to add item to cart."""
+        #self.portal.REQUEST["add"] = uid
+        #return self.view.add()
 
-    def _remove_from_cart(self, uid):
-        """A helper method to remove items from cart."""
-        self.portal.REQUEST["remove"] = uid
-        return self.view.remove()
+    #def _remove_from_cart(self, uid):
+        #"""A helper method to remove items from cart."""
+        #self.portal.REQUEST["remove"] = uid
+        #return self.view.remove()
 
     def test_browser_view_exists(self):
         """Test if @@cart browser view is registered and visible."""
@@ -58,16 +58,13 @@ class TestCart(IntegrationTestCase):
 
         # existing UIDs
         for obj in [self.item1, self.item2, self.item3]:
-            returned_obj = self.view._get_item_brain_by_UID(
+            returned_obj = self.view._get_brain_by_UID(
                 obj.UID()).getObject()
             self.assertEqual(obj, returned_obj)
 
-        # raise NoResultError for non-existing UIDs
-        from slc.cart.interfaces import NoResultError
-        with self.assertRaises(NoResultError):
-            self.view._get_item_brain_by_UID('non-existing-uid')
-        self.assertRaises(
-            NoResultError, self.view._get_item_brain_by_UID, '')
+        # non-existing UIDs
+        ret_val = self.view._get_brain_by_UID('a-non-existing-uid')
+        self.assertIsNone(ret_val)
 
     def test_items(self):
         """Test returning list of brains (meta_data) of items in
@@ -75,11 +72,9 @@ class TestCart(IntegrationTestCase):
         """
 
         # add some items to cart
-        self.member.setMemberProperties({'cart': (
-            self.item1.UID(),
-            self.item2.UID(),
-            self.item3.UID(),
-        )})
+        self.item1.restrictedTraverse("add-to-cart").render()
+        self.item2.restrictedTraverse("add-to-cart").render()
+        self.item3.restrictedTraverse("add-to-cart").render()
 
         # test that correct amount of items are in cart
         self.assertEqual(len(self.view.items()), 3)
@@ -92,127 +87,143 @@ class TestCart(IntegrationTestCase):
 
     def test_is_item_in_cart_ajax(self):
         """Test boolean method for AJAX calls."""
-        self.portal.REQUEST["is-item-in-cart"] = self.item1.UID()
-        self.portal.REQUEST["add"] = self.item1.UID()
+        self.portal.REQUEST["HTTP_X_REQUESTED_WITH"] = "XMLHttpRequest"
 
         # test for a non-existing item
-        self.assertEquals(self.view.is_item_in_cart(), 'false')
+        out = self.item1.restrictedTraverse("is-in-cart").render()
+        self.assertEquals(out, 'false')
 
         # test for an existing item
-        self._add_to_cart(self.item1.UID())
-        self.assertEquals(self.view.is_item_in_cart(), 'true')
+        self.item1.restrictedTraverse("add-to-cart").render()
+        out = self.item1.restrictedTraverse("is-in-cart").render()
+        self.assertEquals(out, 'true')
 
-    def test_num_of_items(self):
+    def test_item_count(self):
         """Test len() method for AJAX calls."""
-        self.assertEqual(int(self.view.num_of_items()), 0)
+        self.assertEqual(int(self.view.item_count()), 0)
 
-        self._add_to_cart(self.item1.UID())
-        self.assertEqual(int(self.view.num_of_items()), 1)
+        self.item1.restrictedTraverse("add-to-cart").render()
+        self.assertEqual(int(self.view.item_count()), 1)
 
-        self._add_to_cart(self.item2.UID())
-        self.assertEqual(int(self.view.num_of_items()), 2)
+        self.item2.restrictedTraverse("add-to-cart").render()
+        self.assertEqual(int(self.view.item_count()), 2)
 
-        self._remove_from_cart(self.item2.UID())
-        self.assertEqual(int(self.view.num_of_items()), 1)
+        self.item2.restrictedTraverse("remove-from-cart").render()
+        self.assertEqual(int(self.view.item_count()), 1)
 
         # remove same item again, nothing should change
-        self._remove_from_cart(self.item2.UID())
-        self.assertEqual(int(self.view.num_of_items()), 1)
+        self.item2.restrictedTraverse("remove-from-cart").render()
+        self.assertEqual(int(self.view.item_count()), 1)
 
     def test_add(self):
-        """Test if item is correctly added to cart and if correct response
-        is returned based on request type.
+        """Test if item is correctly added to the cart.
         """
-        self.assertEqual(len(self.view.items()), 0)
+        cart = self.portal.restrictedTraverse('cart').cart
+        self.assertEqual(len(cart), 0)
 
-        # add item, normal request
-        out = self._add_to_cart(self.item1.UID())
-        self.assertEqual(len(self.view.items()), 1)
-        self.assertTrue("Info" in out)
+        # add new item
+        self.item1.restrictedTraverse("add-to-cart").render()
+        self.assertIn(self.item1.UID(), cart)
+        self.assertEqual(len(cart), 1)
 
-        # item already in cart
-        out = self._add_to_cart(self.item1.UID())
-        self.assertEqual(len(self.view.items()), 1)
-        self.assertTrue("Error" in out)
+        # add another item
+        self.item2.restrictedTraverse("add-to-cart").render()
+        self.assertIn(self.item2.UID(), cart)
+        self.assertEqual(len(cart), 2)
 
-        # add non-existent item, normal request
-        out = self._add_to_cart("non-existent-uid")
-        self.assertEqual(len(self.view.items()), 1)
-        self.assertTrue("Error" in out)
+        # add an item that already exists (nothing should change and
+        # no error should be raised)
+        self.portal.item1.restrictedTraverse("add-to-cart").render()
+        self.assertIn(self.item1.UID(), cart)
+        self.assertEqual(len(cart), 2)
 
     def test_add_ajax(self):
         """Test if item is correctly added to cart and if correct response
-        is returned based on request type (with AJAX).
+        is returned.
         """
+        from slc.cart.browser.cart import STATUS
+
         self.portal.REQUEST["HTTP_X_REQUESTED_WITH"] = "XMLHttpRequest"
-        self.assertEqual(len(self.view.items()), 0)
+        cart = self.portal.restrictedTraverse('cart').cart
+        self.assertEqual(len(cart), 0)
 
-        # add an item, AJAX request
-        out = self._add_to_cart(self.item1.UID())
-        self.assertEqual(len(self.view.items()), 1)
-        self.assertTrue(json.loads(out)['return_status'])
+        # add new item
+        out = self.item1.restrictedTraverse("add-to-cart").render()
+        self.assertIn(self.item1.UID(), cart)
+        self.assertEqual(len(cart), 1)
+        self.assertEqual(out, str(STATUS.OK))
 
-        # item already in cart, AJAX
-        out = self._add_to_cart(self.item1.UID())
-        self.assertEqual(len(self.view.items()), 1)
-        self.assertFalse(json.loads(out)['return_status'])
+        # add another item
+        out = self.item2.restrictedTraverse("add-to-cart").render()
+        self.assertIn(self.item2.UID(), cart)
+        self.assertEqual(len(cart), 2)
+        self.assertEqual(out, str(STATUS.OK))
 
-        # add non-existent item, AJAX
-        out = self._add_to_cart("non-existent-uid")
-        self.assertEqual(len(self.view.items()), 1)
-        self.assertFalse(json.loads(out)['return_status'])
+        # add an item that already exists (nothing should change and
+        # no error should be raised)
+        out = self.portal.item1.restrictedTraverse("add-to-cart").render()
+        self.assertIn(self.item1.UID(), cart)
+        self.assertEqual(len(cart), 2)
+        self.assertEqual(out, str(STATUS.OK))
 
     def test_remove(self):
         """Test if item is correctly removed from cart and if correct
         response is returned based ob request type (AJAX).
         """
+        from slc.cart.browser.cart import STATUS
 
-        # first add some items to cart
-        self.member.setMemberProperties({'cart': (
-            self.item1.UID(),
-            self.item2.UID(),
-            self.item3.UID(),
-        )})
-        self.assertEqual(len(self.view.items()), 3)
+        cart = self.portal.restrictedTraverse('cart').cart
+
+        # add some items ...
+        self.item1.restrictedTraverse("add-to-cart").render()
+        self.item2.restrictedTraverse("add-to-cart").render()
+        self.item3.restrictedTraverse("add-to-cart").render()
+
+        self.assertEqual(len(cart), 3)
 
         # remove item, normal request
-        self.portal.REQUEST["remove"] = self.item1.UID()
-        out = self.view.remove()
-        self.assertEqual(len(self.view.items()), 2)
-        self.assertTrue("Info" in out)
+        self.item1.restrictedTraverse("remove-from-cart").render()
+        self.assertNotIn(self.item1.UID(), cart)
+        self.assertEqual(len(cart), 2)
 
         # remove item, AJAX request
         self.portal.REQUEST["HTTP_X_REQUESTED_WITH"] = "XMLHttpRequest"
-        self.portal.REQUEST["remove"] = self.item2.UID()
-        out = self.view.remove()
-        self.assertEqual(len(self.view.items()), 1)
-        self.assertTrue(json.loads(out)['return_status'])
-
-        # try to remove non-existent item, AJAX request
-        self.portal.REQUEST["HTTP_X_REQUESTED_WITH"] = "XMLHttpRequest"
-        self.portal.REQUEST["remove"] = "non-existent-uid"
-        out = self.view.remove()
-        self.assertEqual(len(self.view.items()), 1)
-        self.assertFalse(json.loads(out)['return_status'])
-
-        # try to remove non-existent item, normal request
-        self.portal.REQUEST["HTTP_X_REQUESTED_WITH"] = ""
-        out = self.view.remove()
-        self.assertEqual(len(self.view.items()), 1)
-        self.assertTrue("Error" in out)
+        out = self.item3.restrictedTraverse("remove-from-cart").render()
+        self.assertEqual(out, str(STATUS.OK))
+        self.assertNotIn(self.item1.UID(), cart)
+        self.assertEqual(len(cart), 1)
 
     def test_clear(self):
         """Test that cart is completely cleared."""
-        self.assertEqual(int(self.view.num_of_items()), 0)
-        self.view.clear()
-        self.assertEqual(int(self.view.num_of_items()), 0)
 
-        self._add_to_cart(self.item1.UID())
-        self._add_to_cart(self.item2.UID())
-        self.assertEqual(int(self.view.num_of_items()), 2)
+        from slc.cart.browser.cart import STATUS
 
+        cart = self.portal.restrictedTraverse('cart').cart
+
+        # clear an empty cart
+        self.assertEqual(len(cart), 0)
         self.view.clear()
-        self.assertEqual(int(self.view.num_of_items()), 0)
+        self.assertEqual(len(cart), 0)
+
+        # add some items ...
+        self.item1.restrictedTraverse("add-to-cart").render()
+        self.item2.restrictedTraverse("add-to-cart").render()
+        self.item3.restrictedTraverse("add-to-cart").render()
+
+        self.assertEqual(len(cart), 3)
+        self.view.clear()
+        self.assertEqual(len(cart), 0)
+
+        # test clear AJAX
+        self.item1.restrictedTraverse("add-to-cart").render()
+        self.item2.restrictedTraverse("add-to-cart").render()
+        self.item3.restrictedTraverse("add-to-cart").render()
+
+        self.portal.REQUEST["HTTP_X_REQUESTED_WITH"] = "XMLHttpRequest"
+        self.assertEqual(self.view.item_count(), 3)
+        out = self.view.clear()
+        self.assertEqual(out, str(STATUS.OK))
+        self.assertEqual(self.view.item_count(), 0)
 
     #def test_download(self):
     #    """Test ZIP archiving a batch of items in cart."""
