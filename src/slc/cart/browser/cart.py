@@ -1,46 +1,32 @@
 # -*- coding: utf-8 -*-
 """Download cart for batch processing of items."""
 
+from Products.CMFCore.interfaces import IContentish
 from collections import namedtuple
+from five import grok
 from plone import api
-from Products.Five.browser import BrowserView
-from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 from slc.cart.interfaces import NoResultError
 from zope.annotation.interfaces import IAnnotations
+from Products.Five.browser import BrowserView
+from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 
 import json
 import logging
 
 logger = logging.getLogger("slc.cart")
+grok.templatedir('.')
+
+STATUS = namedtuple('STATUS', ['OK', 'ERROR'])(*range(2))
+"""Response status codes."""
 
 
 class CartView(BrowserView):
-    """A BrowserView for listing and adding items to cart."""
+    """A BrowserView for listing items in cart."""
 
     template = ViewPageTemplateFile('cart.pt')
 
-    STATUS = namedtuple('STATUS', ['OK', 'ERROR'])(*range(2))
-    """Response status codes."""
-
     def __call__(self):
-        """Request controller. It routes different types of @@cart requests to
-        their dedicated handler methods.
-        """
-
-        supported_methods = (
-            'item-count',
-            'add',
-            'remove',
-            'clear',
-            'download',
-            'contains',
-        )
-
-        # if query string is provided, call given method
-        for method in supported_methods:
-            if method in self.request:
-                return getattr(self, method.replace('-', '_'))()
-
+        """Must be here as a convention."""
         return self.template()
 
     def _get_brain_by_UID(self, UID):
@@ -58,7 +44,8 @@ class CartView(BrowserView):
 
         return brains[0] if brains else None
 
-    def _get_cart(self):
+    @property
+    def cart(self):
         """TODO"""
         # get the zope.annotations object stored on current member object
         annotations = IAnnotations(api.user.get_current())
@@ -71,7 +58,7 @@ class CartView(BrowserView):
         :rtype: list of Brains
         """
         items = []
-        for UID in self._get_cart():
+        for UID in self.cart:
             brain = self._get_brain_by_UID(UID)
             if brain:
                 items.append(brain)
@@ -79,145 +66,84 @@ class CartView(BrowserView):
                 msg = "An item in cart (UID: {0}) not found in the catalog."
                 logger.warn(NoResultError(msg.formtat(UID)))
 
-        return self._prepare_response(self.STATUS.OK, items)
+        return items
 
     def item_count(self):
         """Return the number of items currently in cart.
 
         :return: The number of items currently in cart.
-        :rtype: ViewPageTemplateFile or JSON response
+        :rtype: int
+
         """
-        count = len(self._get_cart())
-        return self._prepare_response(self.STATUS.OK, count)
-
-    def contains(self, UID=None):
-        """Check if an item exists in the cart.
-
-        :return: Boolean describing if item exists in logged in user's cart.
-        :rtype: ViewPageTemplateFile or JSON response
-        """
-        UID = UID or self.request.get('contains')
-        cart = self._get_cart()
-
-        response_body = (UID in cart)
-        return self._prepare_response(self.STATUS.OK, response_body)
-
-    def add(self, UID=None):
-        """A method for adding items to cart.
-
-        :param UID: Unique ID of an item.
-        :type UID: string
-        :return: Normal request: A 'cart.pt' ViewPageTemplateFile which
-            renders a normal Plone view.
-        :return: AJAX request: JSON response describing whether the item
-            was added or not (an item might not be added if it can't be found
-            in the database)
-        :rtype: ViewPageTemplateFile or JSON response
-        """
-        UID = UID or self.request.get('add')
-        cart = self._get_cart()
-
-        if self._get_brain_by_UID(UID):
-            cart.add(UID)
-            return self._prepare_response(self.STATUS.OK, True)
-        else:
-            return self._prepare_response(self.STATUS.OK, False)
-
-    def remove(self, UID=None):
-        """
-        A method for removing items from cart.
-
-        :return: A 'cart.pt' ViewPageTemplateFile which renders a normal
-            Plone view.
-        :rtype: ViewPageTemplateFile or JSON response
-        """
-        UID = UID or self.request.get('remove')
-        cart = self._get_cart()
-        cart.discard(UID)
-
-        return self._prepare_response(self.STATUS.OK)
+        return len(self._get_cart())
 
     def clear(self):
-        """
-        Remove all items from cart.
+        """Remove all items from cart and display the @@cart view or return
+        OK when requested via AJAX.
+
+        This method is accessable via URL traversal (@@cart/clear).
 
         :return: A 'cart.pt' ViewPageTemplateFile which renders a normal
-            Plone view.
+            Plone view or a JSON status.OK
         :rtype: ViewPageTemplateFile or JSON response
+
         """
         annotations = IAnnotations(api.user.get_current())
         annotations['cart'] = set()
 
-        return self._prepare_response(self.STATUS.OK)
-
-    def _prepare_response(self, status, body=None):
-        """Prepare response based on the request type (AJAX, non-AJAX).
-
-        On AJAX request return a JSON-formatted response, otherwise return
-        a normal Plone response - a ViewPageTemplateFile.
-
-        :param status: status code indicating whether a request was
-            successfully processed or not
-        :type status: int
-        :param body: the body of the response
-        :type body: any JSON-serializable type
-        :return: A 'cart.pt' ViewPageTemplateFile which renders a normal
-            Plone view or a response formatted as a JSON string.
-        :rtype: ViewPageTemplateFile or string
-        """
-        if body is None:
-            body = ""
-
         if self.request.get('HTTP_X_REQUESTED_WITH', None) == 'XMLHttpRequest':
-            response_dict = dict(status=status, body=body)
-            return json.dumps(response_dict)
+            return json.dumps(STATUS.OK)
         else:
             return self.template()
 
-    # def download(self):
-    #     """
-    #     :type format: string
-    #     :returns: A stream of binary data of a ZIP file of all items in the
-    #         cart.
-    #     :rtype: StringIO binary stream
-    #     """
-    #     member = api.user.get_current()
 
-    #     output = StringIO()
-    #     zf = zipfile.ZipFile(output, mode='w')
+class AddToCart(grok.View):
+    """A BrowserView for adding an item to the cart."""
 
-    #     if not member.getProperty('cart'):
-    #         api.portal.show_message(
-    #             message=u"Cart is empty.",
-    #             type="error",
-    #             request=self.request,
-    #         )
-    #         return self.template()
+    grok.context(IContentish)
+    grok.require('slc.cart')
+    grok.name('add-to-cart')
 
-    #     try:
-    #         for UID in member.getProperty('cart'):
+    def render(self):
+        portal = api.portal.get()
+        cart = portal.restrictedTraverse('cart').cart
+        cart.add(api.content.get_uuid(obj=self.context))
 
-    #             try:
-    #                 brain = self._get_item_brain_by_UID(UID)
-    #             except NoResultError as e:
-    #                 logger.warn(e.message)
-    #                 continue
+        if self.request.get('HTTP_X_REQUESTED_WITH', None) == 'XMLHttpRequest':
+            return json.dumps(STATUS.OK)
+        else:
+            self.request.response.redirect(portal.absolute_url() + '/@@cart')
 
-    #             item = brain.getObject()
 
-    #             zf.writestr(
-    #                 "Cart Download Pack/%s.txt" % (item.title),
-    #                 item.data
-    #             )
-    #     finally:
-    #         zf.close()
+class RemoveFromCart(grok.View):
+    """A BrowserView for removing an item from the cart."""
 
-    #     self.context.REQUEST.response.setHeader(
-    #         "Content-Type",
-    #         "application/zip"
-    #     )
-    #     self.context.REQUEST.response.setHeader(
-    #         'Content-Disposition',
-    #         "attachment; filename=cart.zip"
-    #     )
-    #     return output.getvalue()
+    grok.context(IContentish)
+    grok.require('slc.cart')
+    grok.name('remove-from-cart')
+
+    def render(self):
+        portal = api.portal.get()
+        cart = portal.restrictedTraverse('cart').cart
+        cart.discard(api.content.get_uuid(obj=self.context))
+
+        if self.request.get('HTTP_X_REQUESTED_WITH', None) == 'XMLHttpRequest':
+            return json.dumps(STATUS.OK)
+        else:
+            self.request.response.redirect(portal.absolute_url() + '/@@cart')
+
+
+class IsInCart(grok.View):
+    """A BrowserView for checking if an item is already in the cart."""
+
+    grok.context(IContentish)
+    grok.require('slc.cart')
+    grok.name('is-in-cart')
+
+    def render(self):
+        portal = api.portal.get()
+        cart = portal.restrictedTraverse('cart').cart
+        UID = api.content.get_uuid(obj=self.context)
+
+        if self.request.get('HTTP_X_REQUESTED_WITH', None) == 'XMLHttpRequest':
+            return json.dumps(UID in cart)

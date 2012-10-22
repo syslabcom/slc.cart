@@ -26,7 +26,7 @@ class CartView(BrowserView):
     - remove all items from cart: http://localhost:8080/dev/cart?clear=1
     """
 
-    template = ViewPageTemplateFile('cart.pt')
+    #
 
     def __call__(self):
         """Request controller. It routes different types of @@cart requests to

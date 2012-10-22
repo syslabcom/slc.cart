@@ -6,11 +6,6 @@
       metal:use-macro="context/main_template/macros/master">
 <body>
 
-<metal:block fill-slot="top_slot"
-             tal:define="disable_border python:request.set('disable_border',1);
-                         disable_column_one python:request.set('disable_plone.leftcolumn',1);
-                         disable_column_two python:request.set('disable_plone.rightcolumn',1);" />
-
 <metal:main fill-slot="main">
     <tal:main-macro metal:define-macro="main">
 
@@ -20,12 +15,6 @@
 
         <div tal:condition="not: view/items">
             You have not added any items to your cart yet.
-            <a href="#"
-               tal:attributes="href string:${context/portal_url}/@@search">
-                Find an item
-            </a>
-            and click on the cart icon to add it to cart. You can also click
-            on 'Add to Cart' link when viewing an item.
         </div>
 
         <div tal:condition="view/items">
@@ -38,6 +27,7 @@
                 <thead>
                     <tr>
                         <th>Title</th>
+                        <th>Author</th>
                         <th>Remove from cart</th>
                     </tr>
                 </thead>
@@ -47,9 +37,12 @@
                             <a href="#" tal:attributes="href string:${item/getURL}/view"
                                         tal:content="item/Title" />
                         </td>
+                        <td tal:content="item/Creator">
+                            John Smith
+                        </td>
                         <td>
                             <a href="#" class="remove-from-cart"
-                               tal:attributes="href string:${context/portal_url}/cart?remove=${item/UID}">
+                               tal:attributes="href string:${item/getURL}/@@remove-from-cart">
                                 <img src="delete_icon.gif" alt="remove"/> remove
                             </a>
                         </td>
@@ -62,7 +55,7 @@
                tal:attributes="href string:${context/portal_url}/cart?download=1&format=normal">
                    Download Items
             </a-->
-            <a href="#" class="clear-cart-button" id="clear-cart" tal:attributes="href string:${context/portal_url}/cart?clear=1">
+            <a href="#" class="clear-cart-button" id="clear-cart" tal:attributes="href string:${context/portal_url}/cart/clear">
                 Clear your cart.
             </a>
         </div>
