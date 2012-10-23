@@ -25,12 +25,19 @@
         $cartLink.text(parts.join(" ").rtrim());
     }
 
-    function updateItemCount() {
+    function updateItemCount(pollServer) {
         var onSuccess,
             url;
 
-        // have a parameter to conditionally do the request! don't always poll
-        //the server
+        if (pollServer === undefined) {
+            pollServer = false;
+        }
+
+        if (!pollServer) {
+            updateCartLabel();
+            return;
+        }
+
         url = portal_url + "/cart/item_count";
         onSuccess = function (data) {
             nItems = parseInt(data, 10);
@@ -48,7 +55,7 @@
 
         $cartLink = $("#personaltools-cart > a");
 
-        updateItemCount();
+        updateItemCount(true);
     });
 
 }());
