@@ -6,6 +6,7 @@
    <property name="title">Cart</property>
    <property name="url_expr">string:${portal_url}/@@cart</property>
    <property name="visible">True</property>
+   <property name="available_expr">python: member is not None</property>
   </object>
  </object>
  <object name="document_actions" meta_type="CMF Action Category">
