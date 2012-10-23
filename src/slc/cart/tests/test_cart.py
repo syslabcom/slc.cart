@@ -6,7 +6,6 @@ from slc.cart.tests.base import IntegrationTestCase
 #from StringIO import StringIO
 from zope.interface import alsoProvides
 
-import json
 import unittest2 as unittest
 #import zipfile
 
@@ -35,18 +34,9 @@ class TestCart(IntegrationTestCase):
         self.item3 = api.content.create(
             container=self.portal, type='Document', id='item3')
 
-    #def _add_to_cart(self, uid):
-        #"""A helper method to add item to cart."""
-        #self.portal.REQUEST["add"] = uid
-        #return self.view.add()
-
-    #def _remove_from_cart(self, uid):
-        #"""A helper method to remove items from cart."""
-        #self.portal.REQUEST["remove"] = uid
-        #return self.view.remove()
-
     def test_browser_view_exists(self):
         """Test if @@cart browser view is registered and visible."""
+        self.portal.REQUEST['ACTUAL_URL'] = self.portal.REQUEST['URL']
         html = self.view()
         self.failUnless(
             '<h1 class="documentFirstHeading">Cart</h1>' in html)
@@ -198,21 +188,21 @@ class TestCart(IntegrationTestCase):
 
         from slc.cart.browser.cart import STATUS
 
-        cart = self.portal.restrictedTraverse('cart').cart
+        self.portal.REQUEST['ACTUAL_URL'] = self.portal.REQUEST['URL']
 
         # clear an empty cart
-        self.assertEqual(len(cart), 0)
+        self.assertEqual(self.view.item_count(), 0)
         self.view.clear()
-        self.assertEqual(len(cart), 0)
+        self.assertEqual(self.view.item_count(), 0)
 
         # add some items ...
         self.item1.restrictedTraverse("add-to-cart").render()
         self.item2.restrictedTraverse("add-to-cart").render()
         self.item3.restrictedTraverse("add-to-cart").render()
 
-        self.assertEqual(len(cart), 3)
+        self.assertEqual(self.view.item_count(), 3)
         self.view.clear()
-        self.assertEqual(len(cart), 0)
+        self.assertEqual(self.view.item_count(), 0)
 
         # test clear AJAX
         self.item1.restrictedTraverse("add-to-cart").render()

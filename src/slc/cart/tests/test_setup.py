@@ -51,15 +51,6 @@ class TestInstall(IntegrationTestCase):
                      if r.getId() == '++resource++search.js'][0]
         self.assertFalse(search_js.getEnabled())
 
-    # memberdata_properties.xml
-    def test_fields_added_to_member(self):
-        """Test that extra fields are added to member properties."""
-        memberdata = self.portal.portal_memberdata
-
-        self.assertTrue(hasattr(memberdata, 'cart'))
-        self.assertEquals(
-            str(memberdata.getProperty('cart').__class__), "<type 'tuple'>")
-
     # actions.xml
     def test_cart_actions_added(self):
         """Test if cart actions are added to user and document actions."""
