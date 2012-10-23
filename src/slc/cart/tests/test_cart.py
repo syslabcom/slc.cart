@@ -1,11 +1,14 @@
 """Testing the  Download cart."""
 
+from contextlib import contextmanager
 from plone import api
 from Products.CMFCore.utils import getToolByName
+from slc.cart.browser.cart import STATUS
 from slc.cart.tests.base import IntegrationTestCase
 #from StringIO import StringIO
 from zope.interface import alsoProvides
 
+import json
 import unittest2 as unittest
 #import zipfile
 
@@ -33,6 +36,14 @@ class TestCart(IntegrationTestCase):
             container=self.portal, type='Document', id='item2')
         self.item3 = api.content.create(
             container=self.portal, type='Document', id='item3')
+
+    @contextmanager
+    def disable_ajax(self):
+        """A helper context manager to temporary disable requests via AJAX.
+        """
+        self.portal.REQUEST["HTTP_X_REQUESTED_WITH"] = ""
+        yield
+        self.portal.REQUEST["HTTP_X_REQUESTED_WITH"] = "XMLHttpRequest"
 
     def test_browser_view_exists(self):
         """Test if @@cart browser view is registered and visible."""
@@ -75,35 +86,60 @@ class TestCart(IntegrationTestCase):
             self.assertEquals(
                 type_of_object, "<class 'Products.ZCatalog.Catalog.mybrains'>")
 
-    def test_is_item_in_cart_ajax(self):
+    def test_is_item_in_cart(self):
         """Test boolean method for AJAX calls."""
+
+        #Nothing is returned for non-AJAX requests
+        out = self.item1.restrictedTraverse("is-in-cart").render()
+        self.assertIsNone(out)
+
+        # test AJAX requests
         self.portal.REQUEST["HTTP_X_REQUESTED_WITH"] = "XMLHttpRequest"
+
+        response_dict = {"status": STATUS.OK,
+                         "body": False,
+                         "err_msg": "", }
 
         # test for a non-existing item
         out = self.item1.restrictedTraverse("is-in-cart").render()
-        self.assertEquals(out, 'false')
+        self.assertEquals(out, json.dumps(response_dict))
 
         # test for an existing item
+        response_dict['body'] = True
         self.item1.restrictedTraverse("add-to-cart").render()
         out = self.item1.restrictedTraverse("is-in-cart").render()
-        self.assertEquals(out, 'true')
+
+        self.assertEquals(out, json.dumps(response_dict))
 
     def test_item_count(self):
-        """Test len() method for AJAX calls."""
-        self.assertEqual(int(self.view.item_count()), 0)
+        """Test item_count method."""
+
+        # nothing is returned for non-AJAX requests
+        out = self.item1.restrictedTraverse("is-in-cart").render()
+        self.assertIsNone(out)
+
+        # test AJAX calls
+        self.portal.REQUEST["HTTP_X_REQUESTED_WITH"] = "XMLHttpRequest"
+
+        with self.disable_ajax():
+            self.assertEqual(int(self.view.item_count()), 0)
 
         self.item1.restrictedTraverse("add-to-cart").render()
-        self.assertEqual(int(self.view.item_count()), 1)
+        with self.disable_ajax():
+            self.assertEqual(int(self.view.item_count()), 1)
 
         self.item2.restrictedTraverse("add-to-cart").render()
-        self.assertEqual(int(self.view.item_count()), 2)
+        with self.disable_ajax():
+            self.assertEqual(int(self.view.item_count()), 2)
 
         self.item2.restrictedTraverse("remove-from-cart").render()
-        self.assertEqual(int(self.view.item_count()), 1)
+        with self.disable_ajax():
+            self.assertEqual(int(self.view.item_count()), 1)
 
         # remove same item again, nothing should change
         self.item2.restrictedTraverse("remove-from-cart").render()
-        self.assertEqual(int(self.view.item_count()), 1)
+        with self.disable_ajax():
+            self.assertEqual(int(self.view.item_count()), 1)
 
     def test_add(self):
         """Test if item is correctly added to the cart.
@@ -131,9 +167,12 @@ class TestCart(IntegrationTestCase):
         """Test if item is correctly added to cart and if correct response
         is returned.
         """
-        from slc.cart.browser.cart import STATUS
-
         self.portal.REQUEST["HTTP_X_REQUESTED_WITH"] = "XMLHttpRequest"
+
+        response_dict = {"status": STATUS.OK,
+                         "body": None,
+                         "err_msg": "", }
+
         cart = self.portal.restrictedTraverse('cart').cart
         self.assertEqual(len(cart), 0)
 
@@ -141,27 +180,25 @@ class TestCart(IntegrationTestCase):
         out = self.item1.restrictedTraverse("add-to-cart").render()
         self.assertIn(self.item1.UID(), cart)
         self.assertEqual(len(cart), 1)
-        self.assertEqual(out, str(STATUS.OK))
+        self.assertEqual(out, json.dumps(response_dict))
 
         # add another item
         out = self.item2.restrictedTraverse("add-to-cart").render()
         self.assertIn(self.item2.UID(), cart)
         self.assertEqual(len(cart), 2)
-        self.assertEqual(out, str(STATUS.OK))
+        self.assertEqual(out, json.dumps(response_dict))
 
         # add an item that already exists (nothing should change and
         # no error should be raised)
         out = self.portal.item1.restrictedTraverse("add-to-cart").render()
         self.assertIn(self.item1.UID(), cart)
         self.assertEqual(len(cart), 2)
-        self.assertEqual(out, str(STATUS.OK))
+        self.assertEqual(out, json.dumps(response_dict))
 
     def test_remove(self):
         """Test if item is correctly removed from cart and if correct
         response is returned based ob request type (AJAX).
         """
-        from slc.cart.browser.cart import STATUS
-
         cart = self.portal.restrictedTraverse('cart').cart
 
         # add some items ...
@@ -178,15 +215,18 @@ class TestCart(IntegrationTestCase):
 
         # remove item, AJAX request
         self.portal.REQUEST["HTTP_X_REQUESTED_WITH"] = "XMLHttpRequest"
+
+        response_dict = {"status": STATUS.OK,
+                         "body": None,
+                         "err_msg": "", }
+
         out = self.item3.restrictedTraverse("remove-from-cart").render()
-        self.assertEqual(out, str(STATUS.OK))
+        self.assertEqual(out, json.dumps(response_dict))
         self.assertNotIn(self.item1.UID(), cart)
         self.assertEqual(len(cart), 1)
 
     def test_clear(self):
         """Test that cart is completely cleared."""
-
-        from slc.cart.browser.cart import STATUS
 
         self.portal.REQUEST['ACTUAL_URL'] = self.portal.REQUEST['URL']
 
@@ -205,15 +245,24 @@ class TestCart(IntegrationTestCase):
         self.assertEqual(self.view.item_count(), 0)
 
         # test clear AJAX
+        self.portal.REQUEST["HTTP_X_REQUESTED_WITH"] = "XMLHttpRequest"
+
+        response_dict = {"status": STATUS.OK,
+                         "body": None,
+                         "err_msg": "", }
+
         self.item1.restrictedTraverse("add-to-cart").render()
         self.item2.restrictedTraverse("add-to-cart").render()
         self.item3.restrictedTraverse("add-to-cart").render()
 
-        self.portal.REQUEST["HTTP_X_REQUESTED_WITH"] = "XMLHttpRequest"
-        self.assertEqual(self.view.item_count(), 3)
+        with self.disable_ajax():
+            self.assertEqual(int(self.view.item_count()), 3)
+
         out = self.view.clear()
-        self.assertEqual(out, str(STATUS.OK))
-        self.assertEqual(self.view.item_count(), 0)
+        self.assertEqual(out, json.dumps(response_dict))
+
+        with self.disable_ajax():
+            self.assertEqual(int(self.view.item_count()), 0)
 
     #def test_download(self):
     #    """Test ZIP archiving a batch of items in cart."""

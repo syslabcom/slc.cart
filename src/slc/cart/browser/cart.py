@@ -76,11 +76,12 @@ class CartView(BrowserView):
 
         """
         if self.request.get('HTTP_X_REQUESTED_WITH', None) == 'XMLHttpRequest':
-            return json.dumps(len(self.cart))
-            return json.dumps(STATUS.OK)  # TODO: rewrite so thatou get a proper json dict! (status, body, err_msg)
-        # NOTE: else simply don't return anything, because it's not meant
-        # to be used for non-AJAX requests anyway
-
+            response_dict = {"status": STATUS.OK,
+                             "body": len(self.cart),
+                             "err_msg": "", }
+            return json.dumps(response_dict)
+        else:
+            return len(self.cart)
 
     def clear(self):
         """Remove all items from cart and display the @@cart view or return
@@ -97,7 +98,10 @@ class CartView(BrowserView):
         annotations['cart'] = set()
 
         if self.request.get('HTTP_X_REQUESTED_WITH', None) == 'XMLHttpRequest':
-            return json.dumps(STATUS.OK)  # TODO: rewrite so thatou get a proper json dict! (status, body, err_msg)
+            response_dict = {"status": STATUS.OK,
+                             "body": None,
+                             "err_msg": "", }
+            return json.dumps(response_dict)
         else:
             return self.template()
 
@@ -115,7 +119,10 @@ class AddToCart(grok.View):
         cart.add(api.content.get_uuid(obj=self.context))
 
         if self.request.get('HTTP_X_REQUESTED_WITH', None) == 'XMLHttpRequest':
-            return json.dumps(STATUS.OK)
+            response_dict = {"status": STATUS.OK,
+                             "body": None,
+                             "err_msg": "", }
+            return json.dumps(response_dict)
         else:
             self.request.response.redirect(portal.absolute_url() + '/@@cart')
 
@@ -133,7 +140,10 @@ class RemoveFromCart(grok.View):
         cart.discard(api.content.get_uuid(obj=self.context))
 
         if self.request.get('HTTP_X_REQUESTED_WITH', None) == 'XMLHttpRequest':
-            return json.dumps(STATUS.OK)
+            response_dict = {"status": STATUS.OK,
+                             "body": None,
+                             "err_msg": "", }
+            return json.dumps(response_dict)
         else:
             self.request.response.redirect(portal.absolute_url() + '/@@cart')
 
@@ -151,6 +161,9 @@ class IsInCart(grok.View):
         UID = api.content.get_uuid(obj=self.context)
 
         if self.request.get('HTTP_X_REQUESTED_WITH', None) == 'XMLHttpRequest':
-            return json.dumps(UID in cart)
+            response_dict = {"status": STATUS.OK,
+                             "body": UID in cart,
+                             "err_msg": "", }
+            return json.dumps(response_dict)
         # NOTE: else simply don't return anything, because it's not meant
         # to be used for non-AJAX requests anyway

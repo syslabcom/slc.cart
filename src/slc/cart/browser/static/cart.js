@@ -2,8 +2,14 @@
 (function () {
     "use strict";
 
-    var nItems,      //the number of items currently in cart
+    var STATUS,      //response status codes
+        nItems,      //the number of items currently in cart
         $cartLink;   //jQuery reference to cart link in the personaltools menu
+
+    STATUS = {
+        OK: 0,
+        ERROR: 1
+    };
 
     function updateCartLabel() {
         var lastPart,   //last chunk of the text
@@ -40,11 +46,12 @@
 
         url = portal_url + "/cart/item_count";
         onSuccess = function (data) {
-            nItems = parseInt(data, 10);
+            nItems = (data.status === STATUS.OK) ?
+                      parseInt(data.body, 10) : "error";
             updateCartLabel();
         };
 
-        $.get(url, onSuccess);
+        $.getJSON(url, onSuccess);
     }
 
     $("document").ready(function () {
