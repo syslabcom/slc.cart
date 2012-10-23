@@ -75,7 +75,12 @@ class CartView(BrowserView):
         :rtype: int
 
         """
-        return len(self.cart)
+        if self.request.get('HTTP_X_REQUESTED_WITH', None) == 'XMLHttpRequest':
+            return json.dumps(len(self.cart))
+            return json.dumps(STATUS.OK)  # TODO: rewrite so thatou get a proper json dict! (status, body, err_msg)
+        # NOTE: else simply don't return anything, because it's not meant
+        # to be used for non-AJAX requests anyway
+
 
     def clear(self):
         """Remove all items from cart and display the @@cart view or return

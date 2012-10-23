@@ -21,7 +21,7 @@
         class=".cart.CartView"
         permission="slc.cart"
         layer="..interfaces.ISlcCartLayer"
-        allowed_attributes="clear"
+        allowed_attributes="clear item_count"
         />
 
 </configure>

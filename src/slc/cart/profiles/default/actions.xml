@@ -3,7 +3,7 @@
    xmlns:i18n="http://xml.zope.org/namespaces/i18n">
  <object name="user" meta_type="CMF Action Category">
   <object name="cart" meta_type="CMF Action" insert-before="*">
-   <property name="title">Cart</property>
+   <property name="title">Cart (0)</property>
    <property name="url_expr">string:${portal_url}/@@cart</property>
    <property name="visible">True</property>
    <property name="available_expr">python: member is not None</property>
