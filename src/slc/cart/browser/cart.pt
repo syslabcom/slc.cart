@@ -55,8 +55,24 @@
                tal:attributes="href string:${context/portal_url}/cart?download=1&format=normal">
                    Download Items
             </a-->
-            <a href="#" class="clear-cart-button" id="clear-cart" tal:attributes="href string:${context/portal_url}/cart/clear">
+            <a href="#" class="clear-cart-button" id="clear-cart-button"
+                tal:attributes="href string:${context/portal_url}/cart/clear">
                 Clear your cart.
+            </a>
+
+            <a href="#" class="rename-button" id="rename-button"
+               tal:attributes="href string:${context/portal_url}/cart/rename">
+                Rename items.
+            </a>
+
+            <a href="#" class="delete-items-button" id="delete-items-button"
+               tal:attributes="href string:${context/portal_url}/cart/delete_items">
+                Delete objects
+            </a>
+
+            <a href="#" class="download-button" id="download-button"
+               tal:attributes="href string:${context/portal_url}/cart/download">
+                Download
             </a>
         </div>
 
