@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 """Download cart for batch processing of items."""
 
-from Products.CMFCore.interfaces import IContentish
 from collections import namedtuple
 from five import grok
 from plone import api
-from slc.cart.interfaces import NoResultError
-from zope.annotation.interfaces import IAnnotations
+from Products.CMFCore.interfaces import IContentish
 from Products.Five.browser import BrowserView
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
+from slc.cart.interfaces import NoResultError
+from zope.annotation.interfaces import IAnnotations
 
 import json
 import logging
@@ -116,14 +116,25 @@ class AddToCart(grok.View):
     def render(self):
         portal = api.portal.get()
         cart = portal.restrictedTraverse('cart').cart
-        cart.add(api.content.get_uuid(obj=self.context))
+        limit = api.portal.get_registry_record('slc.cart.limit')
+
+        if len(cart) >= limit:
+            message = 'Cart full (limit is %d item(s))' % limit
+            status = STATUS.ERROR
+        else:
+            cart.add(api.content.get_uuid(obj=self.context))
+            message = ''
+            status = STATUS.OK
 
         if self.request.get('HTTP_X_REQUESTED_WITH', None) == 'XMLHttpRequest':
-            response_dict = {"status": STATUS.OK,
+            response_dict = {"status": status,
                              "body": None,
-                             "err_msg": "", }
+                             "err_msg": message, }
             return json.dumps(response_dict)
         else:
+            if message:
+                api.portal.show_message(
+                    message=message, request=self.request, type='error')
             self.request.response.redirect(portal.absolute_url() + '/@@cart')
 
 

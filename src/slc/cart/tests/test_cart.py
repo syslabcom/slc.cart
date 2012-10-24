@@ -3,6 +3,7 @@
 from contextlib import contextmanager
 from plone import api
 from Products.CMFCore.utils import getToolByName
+from Products.statusmessages.interfaces import IStatusMessage
 from slc.cart.browser.cart import STATUS
 from slc.cart.tests.base import IntegrationTestCase
 #from StringIO import StringIO
@@ -194,6 +195,62 @@ class TestCart(IntegrationTestCase):
         self.assertIn(self.item1.UID(), cart)
         self.assertEqual(len(cart), 2)
         self.assertEqual(out, json.dumps(response_dict))
+
+    def test_cart_limit(self):
+        """Test if cart limit is honored when adding an item to cart."""
+
+        # Set a lower limit, since it's 100 by default'
+        api.portal.set_registry_record('slc.cart.limit', 1)
+        cart = self.portal.restrictedTraverse('cart').cart
+        self.assertEqual(len(cart), 0)
+
+        # add a new item
+        self.item1.restrictedTraverse("add-to-cart").render()
+        self.assertEqual(len(cart), 1)
+        messages = IStatusMessage(self.portal.REQUEST)
+        self.assertEqual(len(messages.show()), 0)
+
+        # add another item, error message should be displayed
+        self.item2.restrictedTraverse("add-to-cart").render()
+        messages = IStatusMessage(self.portal.REQUEST)
+        message = messages.show()[0].message
+        self.assertIn('Cart full (limit is 1 item(s))', message)
+        self.assertEqual(len(cart), 1)
+
+    def test_cart_limit_ajax(self):
+        """Test if cart limit is honored when adding an item to cart and if
+        correct reponse is returned.
+        """
+
+        self.portal.REQUEST["HTTP_X_REQUESTED_WITH"] = "XMLHttpRequest"
+
+        response_dict = {
+            "status": STATUS.OK,
+            "body": None,
+            "err_msg": ""
+        }
+
+        error_response_dict = {
+            "status": STATUS.ERROR,
+            "body": None,
+            "err_msg": 'Cart full (limit is 1 item(s))'
+        }
+
+        # Set a lower limit, since it's 100 by default'
+        api.portal.set_registry_record('slc.cart.limit', 1)
+        cart = self.portal.restrictedTraverse('cart').cart
+        self.assertEqual(len(cart), 0)
+
+        # add a new item
+        out = self.item1.restrictedTraverse("add-to-cart").render()
+        self.assertEqual(out, json.dumps(response_dict))
+        self.assertEqual(len(cart), 1)
+
+        # add another item, we should get a reponse with status set to
+        # 'ERROR' and an error message
+        out = self.item2.restrictedTraverse("add-to-cart").render()
+        self.assertEqual(out, json.dumps(error_response_dict))
+        self.assertEqual(len(cart), 1)
 
     def test_remove(self):
         """Test if item is correctly removed from cart and if correct
