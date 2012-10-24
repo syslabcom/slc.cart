@@ -3,13 +3,13 @@
 (function () {
     "use strict";
 
-    var SLIDEUP_MS,   // slideUp effect duration for hiding table rows on @@cart
+    var FADEOUT_MS,   // fadeOut effect duration for hiding table rows on @@cart
         STATUS,       // response status codes
         isCartView,   // set to true when on @@cart view
         nItems,       // the number of items currently in cart
         $cartLink;    // jQuery reference to cart link in the personaltools menu
 
-    SLIDEUP_MS = 1000;
+    FADEOUT_MS = 500;
 
     STATUS = {
         OK: 0,
@@ -53,6 +53,7 @@
     }
 
 
+    // TODO: comment (remove the item the link points to from the cart)
     function removeItem($link) {
 
         var $nextRows,
@@ -94,14 +95,14 @@
                 $nextRows = $row.nextAll();
 
                 //TODO: for some reason the animation is not working in FF 16.0.1
-                $row.slideUp(SLIDEUP_MS, "linear", function () {
+                $row.fadeOut(FADEOUT_MS, "swing", function () {
                     $(this).remove();
                 });
 
                 //flip parity classes of all the rows below (odd to even, even to odd)
                 setTimeout(function () {
                     flipParityClasses($nextRows);
-                }, SLIDEUP_MS);   // should be the same delay as for the slideUp effect
+                }, FADEOUT_MS);   // should be the same delay as for the slideUp effect
 
             } else {
                 //TODO: transform $link from "remove from cart" to "add to cart"
