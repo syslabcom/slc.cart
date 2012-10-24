@@ -1,5 +1,5 @@
 /*jslint plusplus: true */
-/*global $, alert, document, portal_url, setTimeout */
+/*global $, document, portal_url, setTimeout */
 (function () {
     "use strict";
 
@@ -52,7 +52,6 @@
         $.getJSON(url, onSuccess);
     }
 
-
     // Remove the item the link points to from the cart.
     // If on @@cart view, delete the corresponding row in the table.
     function removeItem($link) {
@@ -61,9 +60,8 @@
             $row;
 
         if (nItems <= 0) {
-            // some kind of an UI error, trying to remove items when the cart is empty
-            // TODO: log to console? TODO: display error text on plone portal
-            alert("An attempt to remove an item while the cart is empty");
+            // Some kind of an UI error, trying to remove items when the cart is empty.
+            // for now silently fail ...
             return;
         }
 
@@ -83,8 +81,7 @@
 
         $.getJSON($link.attr("href"), function (data) {
             if (data.status !== STATUS.OK) {
-                // TODO: log to console?
-                alert("server error deleting item");
+                // for now silently fail ...
                 return;
             }
 
@@ -128,7 +125,8 @@
 
         $table = $("table#cart-list");
         if (!$table) {
-            // TODO: log to console? some kind of an UI error probably ...
+            // Some kind of an UI error probably, #cart-list not found
+            // for now silently fail ...
             return;
         }
 
@@ -136,8 +134,7 @@
 
         $.getJSON(url, function (data) {
             if (data.status !== STATUS.OK) {
-                // TODO: log to console?
-                alert("server error when clearing cart");
+                // for now silently fail ...
                 return;
             }
 
@@ -158,8 +155,7 @@
 
         $.getJSON($link.attr("href"), function (data) {
             if (data.status !== STATUS.OK) {
-                // TODO: log to console?
-                alert("server error adding item to cart");
+                // for now silently fail ...
                 return;
             }
 
