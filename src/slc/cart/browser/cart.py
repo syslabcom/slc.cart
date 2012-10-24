@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 """Download cart for batch processing of items."""
 
-from Products.CMFCore.interfaces import IContentish
 from collections import namedtuple
 from five import grok
 from plone import api
-from slc.cart.interfaces import NoResultError
-from zope.annotation.interfaces import IAnnotations
+from Products.CMFCore.interfaces import IContentish
 from Products.Five.browser import BrowserView
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
+from slc.cart.interfaces import NoResultError
+from zope.annotation.interfaces import IAnnotations
 
 import json
 import logging
@@ -18,6 +18,9 @@ grok.templatedir('.')
 
 STATUS = namedtuple('STATUS', ['OK', 'ERROR'])(*range(2))
 """Response status codes."""
+
+ERR_LEVEL = namedtuple('ERR_LEVEL', ['WARNING', 'ERROR'])(*range(1, 3))
+"""Error severity levels."""
 
 
 class CartView(BrowserView):
@@ -116,14 +119,32 @@ class AddToCart(grok.View):
     def render(self):
         portal = api.portal.get()
         cart = portal.restrictedTraverse('cart').cart
-        cart.add(api.content.get_uuid(obj=self.context))
+        limit = api.portal.get_registry_record('slc.cart.limit')
+
+        if len(cart) >= limit:
+            status = STATUS.ERROR
+            body = None
+            message = "Cart full (limit is {0} item(s))".format(limit)
+            # TODO: error label should not be hard-coded!
+            err_info = dict(msg=message,
+                            level=ERR_LEVEL.WARNING,
+                            label="Fehler")
+        else:
+            cart.add(api.content.get_uuid(obj=self.context))
+            status = STATUS.OK
+            body = len(cart)
+            err_info = None
 
         if self.request.get('HTTP_X_REQUESTED_WITH', None) == 'XMLHttpRequest':
-            response_dict = {"status": STATUS.OK,
-                             "body": len(cart),
-                             "err_info": None, }
+
+            response_dict = {"status": status,
+                             "body": body,
+                             "err_info": err_info, }
             return json.dumps(response_dict)
         else:
+            if err_info:
+                api.portal.show_message(
+                    message=err_info['msg'], request=self.request, type='error')
             self.request.response.redirect(portal.absolute_url() + '/@@cart')
 
 

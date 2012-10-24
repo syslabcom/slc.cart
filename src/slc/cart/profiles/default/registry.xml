@@ -1,0 +1,9 @@
+<registry>
+  <record name="slc.cart.limit">
+    <field type="plone.registry.field.Int">
+      <title>Cart Limit</title>
+      <min>0</min>
+    </field>
+    <value>100</value>
+  </record>
+</registry>

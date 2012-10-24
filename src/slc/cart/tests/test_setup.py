@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """Setup/installation tests for this package."""
 
-from slc.cart.tests.base import IntegrationTestCase
+from plone import api
 from Products.CMFCore.utils import getToolByName
+from slc.cart.tests.base import IntegrationTestCase
 
 import unittest2 as unittest
 
@@ -62,6 +63,13 @@ class TestInstall(IntegrationTestCase):
 
         ids = [a.getId() for a in user_actions]
         self.assertIn('cart', ids)
+
+    # registry.xml
+    def test_registry_records_added(self):
+        """Test if registry records have been added."""
+        limit = api.portal.get_registry_record('slc.cart.limit')
+
+        self.assertEquals(limit, 100)
 
 
 def test_suite():

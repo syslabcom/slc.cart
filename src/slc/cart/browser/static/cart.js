@@ -4,12 +4,18 @@
     "use strict";
 
     var FADEOUT_MS,   // fadeOut effect duration for hiding table rows on @@cart
+        ERR_LEVEL,    // error severity levels (as reported by the server)
         STATUS,       // response status codes
         isCartView,   // set to true when on @@cart view
         nItems,       // the number of items currently in cart
         $cartLink;    // jQuery reference to cart link in the personaltools menu
 
     FADEOUT_MS = 500;
+
+    ERR_LEVEL = {
+        WARNING: 1,
+        ERROR: 2
+    };
 
     STATUS = {
         OK: 0,
