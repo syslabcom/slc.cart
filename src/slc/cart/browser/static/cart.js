@@ -53,7 +53,8 @@
     }
 
 
-    // TODO: comment (remove the item the link points to from the cart)
+    // Remove the item the link points to from the cart.
+    // If on @@cart view, delete the corresponding row in the table.
     function removeItem($link) {
 
         var $nextRows,
@@ -82,19 +83,15 @@
 
         $.getJSON($link.attr("href"), function (data) {
             if (data.status !== STATUS.OK) {
-                //TODO: log to console?
+                // TODO: log to console?
                 alert("server error deleting item");
                 return;
             }
-
-            nItems--;
-            updateCartLabel();
 
             if (isCartView) {
                 $row = $($link.parents("tr")[0]);  // must wrap into jQuery object
                 $nextRows = $row.nextAll();
 
-                //TODO: for some reason the animation is not working in FF 16.0.1
                 $row.fadeOut(FADEOUT_MS, "swing", function () {
                     $(this).remove();
                 });
@@ -105,18 +102,60 @@
                 }, FADEOUT_MS);   // should be the same delay as for the slideUp effect
 
             } else {
-                //TODO: transform $link from "remove from cart" to "add to cart"
+                // TODO: transform $link from "remove from cart" to "add to cart"
                 // (this is only for views other than @@cart
                 alert("not implemented yet");
             }
+
+            nItems--;
+            updateCartLabel();
         });  //end getJSON
+    }
+
+    // Remove all items from the cart.
+    // NOTE: only relevant for the @@cart view
+    function removeAll() {
+
+        var url,
+            $row,
+            $table;
+
+        if (!isCartView) {
+            return;  // nothing to do, only relevant on the @@cart view
+        }
+
+        $table = $("table#cart-list");
+        if (!$table) {
+            // TODO: log to console? some kind of an UI error probably ...
+            return;
+        }
+
+        url = portal_url + "/cart/clear";
+
+        $.getJSON(url, function (data) {
+            if (data.status !== STATUS.OK) {
+                // TODO: log to console?
+                alert("server error when clearing cart");
+                return;
+            }
+
+            $table.find("tbody > tr").each(function () {
+                $row = $(this);
+                $row.fadeOut(FADEOUT_MS, "swing", function () {
+                    $row.remove();
+                });
+            });
+
+            nItems = 0;
+            updateCartLabel();
+        });
     }
 
     // initialize click handlers for the links for adding/removing
     // things from the cart
     function initLinks() {
 
-        // links from removing things from the cart
+        // links for removing things from the cart
         $("a.remove-from-cart").each(function () {
             $(this).click(function (event) {
                 event.preventDefault();
@@ -124,7 +163,16 @@
             });
         });
 
-        // TODO: the same for links for adding stuff to cart and for clearing the cart
+        // a link for clearing the cart content
+        // (only present on @@cart view)
+        $("a.clear-cart-button").each(function () {
+            $(this).click(function (event) {
+                event.preventDefault();
+                removeAll();
+            });
+        });
+
+        // TODO: the same for links for adding stuff to cart
     }
 
     $("document").ready(function () {
