@@ -98,7 +98,7 @@ class TestCart(IntegrationTestCase):
 
         response_dict = {"status": STATUS.OK,
                          "body": False,
-                         "err_msg": "", }
+                         "err_info": None, }
 
         # test for a non-existing item
         out = self.item1.restrictedTraverse("is-in-cart").render()
@@ -169,7 +169,7 @@ class TestCart(IntegrationTestCase):
 
         response_dict = {"status": STATUS.OK,
                          "body": None,
-                         "err_msg": "", }
+                         "err_info": None, }
 
         cart = self.portal.restrictedTraverse('cart').cart
         self.assertEqual(len(cart), 0)
@@ -219,7 +219,7 @@ class TestCart(IntegrationTestCase):
 
         response_dict = {"status": STATUS.OK,
                          "body": None,
-                         "err_msg": "", }
+                         "err_info": None, }
 
         out = self.item3.restrictedTraverse("remove-from-cart").render()
         response_dict["body"] = 1
@@ -251,7 +251,7 @@ class TestCart(IntegrationTestCase):
 
         response_dict = {"status": STATUS.OK,
                          "body": None,
-                         "err_msg": "", }
+                         "err_info": None, }
 
         self.item1.restrictedTraverse("add-to-cart").render()
         self.item2.restrictedTraverse("add-to-cart").render()

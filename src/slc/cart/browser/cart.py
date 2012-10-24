@@ -78,7 +78,7 @@ class CartView(BrowserView):
         if self.request.get('HTTP_X_REQUESTED_WITH', None) == 'XMLHttpRequest':
             response_dict = {"status": STATUS.OK,
                              "body": len(self.cart),
-                             "err_msg": "", }
+                             "err_info": None, }
             return json.dumps(response_dict)
         else:
             return len(self.cart)
@@ -100,7 +100,7 @@ class CartView(BrowserView):
         if self.request.get('HTTP_X_REQUESTED_WITH', None) == 'XMLHttpRequest':
             response_dict = {"status": STATUS.OK,
                              "body": 0,
-                             "err_msg": "", }
+                             "err_info": None, }
             return json.dumps(response_dict)
         else:
             return self.template()
@@ -121,7 +121,7 @@ class AddToCart(grok.View):
         if self.request.get('HTTP_X_REQUESTED_WITH', None) == 'XMLHttpRequest':
             response_dict = {"status": STATUS.OK,
                              "body": len(cart),
-                             "err_msg": "", }
+                             "err_info": None, }
             return json.dumps(response_dict)
         else:
             self.request.response.redirect(portal.absolute_url() + '/@@cart')
@@ -142,7 +142,7 @@ class RemoveFromCart(grok.View):
         if self.request.get('HTTP_X_REQUESTED_WITH', None) == 'XMLHttpRequest':
             response_dict = {"status": STATUS.OK,
                              "body": len(cart),
-                             "err_msg": "", }
+                             "err_info": None, }
             return json.dumps(response_dict)
         else:
             self.request.response.redirect(portal.absolute_url() + '/@@cart')
@@ -164,7 +164,7 @@ class IsInCart(grok.View):
         if self.request.get('HTTP_X_REQUESTED_WITH', None) == 'XMLHttpRequest':
             response_dict = {"status": STATUS.OK,
                              "body": is_in_cart,
-                             "err_msg": "", }
+                             "err_info": None, }
             return json.dumps(response_dict)
         else:
             return is_in_cart
