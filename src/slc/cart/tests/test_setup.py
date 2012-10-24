@@ -63,13 +63,6 @@ class TestInstall(IntegrationTestCase):
         ids = [a.getId() for a in user_actions]
         self.assertIn('cart', ids)
 
-        # Check if 'add_to_cart' has been added to document actions
-        document_actions = actions_tool.document_actions.listActions()
-        self.assertEquals(len(document_actions), 5)
-
-        ids = [a.getId() for a in document_actions]
-        self.assertIn('add_to_cart', ids)
-
 
 def test_suite():
     """This sets up a test suite that actually runs the tests in the class

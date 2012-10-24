@@ -87,11 +87,11 @@ class TestCart(IntegrationTestCase):
                 type_of_object, "<class 'Products.ZCatalog.Catalog.mybrains'>")
 
     def test_is_item_in_cart(self):
-        """Test boolean method for AJAX calls."""
+        """Test boolean method."""
 
-        #Nothing is returned for non-AJAX requests
+        # for non-AJAX requests a single value is returned
         out = self.item1.restrictedTraverse("is-in-cart").render()
-        self.assertIsNone(out)
+        self.assertFalse(out)
 
         # test AJAX requests
         self.portal.REQUEST["HTTP_X_REQUESTED_WITH"] = "XMLHttpRequest"
@@ -114,9 +114,7 @@ class TestCart(IntegrationTestCase):
     def test_item_count(self):
         """Test item_count method."""
 
-        # nothing is returned for non-AJAX requests
-        out = self.item1.restrictedTraverse("is-in-cart").render()
-        self.assertIsNone(out)
+        self.assertEqual(int(self.view.item_count()), 0)
 
         # test AJAX calls
         self.portal.REQUEST["HTTP_X_REQUESTED_WITH"] = "XMLHttpRequest"
@@ -180,12 +178,14 @@ class TestCart(IntegrationTestCase):
         out = self.item1.restrictedTraverse("add-to-cart").render()
         self.assertIn(self.item1.UID(), cart)
         self.assertEqual(len(cart), 1)
+        response_dict["body"] = 1
         self.assertEqual(out, json.dumps(response_dict))
 
         # add another item
         out = self.item2.restrictedTraverse("add-to-cart").render()
         self.assertIn(self.item2.UID(), cart)
         self.assertEqual(len(cart), 2)
+        response_dict["body"] = 2
         self.assertEqual(out, json.dumps(response_dict))
 
         # add an item that already exists (nothing should change and
@@ -193,6 +193,7 @@ class TestCart(IntegrationTestCase):
         out = self.portal.item1.restrictedTraverse("add-to-cart").render()
         self.assertIn(self.item1.UID(), cart)
         self.assertEqual(len(cart), 2)
+        response_dict["body"] = 2
         self.assertEqual(out, json.dumps(response_dict))
 
     def test_remove(self):
@@ -221,6 +222,7 @@ class TestCart(IntegrationTestCase):
                          "err_msg": "", }
 
         out = self.item3.restrictedTraverse("remove-from-cart").render()
+        response_dict["body"] = 1
         self.assertEqual(out, json.dumps(response_dict))
         self.assertNotIn(self.item1.UID(), cart)
         self.assertEqual(len(cart), 1)
@@ -259,6 +261,7 @@ class TestCart(IntegrationTestCase):
             self.assertEqual(int(self.view.item_count()), 3)
 
         out = self.view.clear()
+        response_dict["body"] = 0
         self.assertEqual(out, json.dumps(response_dict))
 
         with self.disable_ajax():

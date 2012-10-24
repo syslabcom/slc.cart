@@ -62,7 +62,7 @@
 
         if (nItems <= 0) {
             // some kind of an UI error, trying to remove items when the cart is empty
-            // TODO: log to console?
+            // TODO: log to console? TODO: display error text on plone portal
             alert("An attempt to remove an item while the cart is empty");
             return;
         }
@@ -102,12 +102,14 @@
                 }, FADEOUT_MS);   // should be the same delay as for the slideUp effect
 
             } else {
-                // TODO: transform $link from "remove from cart" to "add to cart"
-                // (this is only for views other than @@cart
-                alert("not implemented yet");
+                // toggle both links: the add-to-cart link will become
+                // visible and the remove-from-cart link hidden
+                $link.parent().children("a").each(function () {
+                    $(this).toggle();
+                });
             }
 
-            nItems--;
+            nItems = data.body;  // server returns the new item count
             updateCartLabel();
         });  //end getJSON
     }
@@ -146,15 +148,30 @@
                 });
             });
 
-            nItems = 0;
+            nItems = data.body;  // server returns the new item count
             updateCartLabel();
         });
     }
 
     // Add the item the link points to to the cart.
     function addItem($link) {
-        // TODO: implement
-        alert("adding items via AJAX not yet implemented!" + $link);
+
+        $.getJSON($link.attr("href"), function (data) {
+            if (data.status !== STATUS.OK) {
+                // TODO: log to console?
+                alert("server error adding item to cart");
+                return;
+            }
+
+            // toggle both links: the add-to-cart link will become
+            // hidden and the remove-from-cart link visible
+            $link.parent().children("a").each(function () {
+                $(this).toggle();
+            });
+
+            nItems = data.body;  // server returns the new item count
+            updateCartLabel();
+        });  //end getJSON
     }
 
     // initialize click handlers for the links for adding/removing
