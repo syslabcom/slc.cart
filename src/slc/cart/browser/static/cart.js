@@ -151,6 +151,12 @@
         });
     }
 
+    // Add the item the link points to to the cart.
+    function addItem($link) {
+        // TODO: implement
+        alert("adding items via AJAX not yet implemented!" + $link);
+    }
+
     // initialize click handlers for the links for adding/removing
     // things from the cart
     function initLinks() {
@@ -172,10 +178,16 @@
             });
         });
 
-        // TODO: the same for links for adding stuff to cart
+        // links for adding items to the cart
+        $("a.add-to-cart").each(function () {
+            $(this).click(function (event) {
+                event.preventDefault();
+                addItem($(this));
+            });
+        });
     }
 
-    $("document").ready(function () {
+    $(document).ready(function () {
         // right trim - trim all whitespace at the end of the string
         String.prototype.rtrim = function () {
             return this.replace(/\s+$/, "");
