@@ -5,11 +5,11 @@ from collections import namedtuple
 from five import grok
 from plone import api
 from Products.CMFCore.interfaces import IContentish
-from Products.Five.browser import BrowserView
-from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 from slc.cart.interfaces import NoResultError
+from zExceptions import NotFound
 from zope.annotation.interfaces import IAnnotations
-
+from zope.publisher.interfaces import IPublishTraverse
+from Products.CMFCore.interfaces import ISiteRoot
 import json
 import logging
 
@@ -23,14 +23,36 @@ ERR_LEVEL = namedtuple('ERR_LEVEL', ['WARNING', 'ERROR'])(*range(1, 3))
 """Error severity levels."""
 
 
-class CartView(BrowserView):
+ALLOWED_VIA_URL = [
+    'item_count',
+    'clear',
+]
+"""Attributes that we allow to be traversable via URL."""
+
+
+class Cart(grok.View):
     """A BrowserView for listing items in cart."""
 
-    template = ViewPageTemplateFile('cart.pt')
+    grok.implements(IPublishTraverse)
+    grok.context(ISiteRoot)
+    grok.require('slc.cart')
 
-    def __call__(self):
-        """Must be here as a convention."""
-        return self.template()
+    def publishTraverse(self, request, name):
+        """A custom publishTraverse method.
+
+        This enables us to use URL traversal to run cart actions. Examples:
+        @@cart/clear, @@cart/download, etc. URL access is only allowed for
+        attributes listed in ALLOWED_VIA_URL.
+
+        """
+        if name in ALLOWED_VIA_URL:
+            return getattr(self, name)
+        else:
+            raise NotFound()
+
+    ##################
+    # Helper methods #
+    ##################
 
     def _get_brain_by_UID(self, UID):
         """Return portal_catalog brains metadata of an item with the specified
@@ -54,6 +76,10 @@ class CartView(BrowserView):
         annotations = IAnnotations(api.user.get_current())
         return annotations.setdefault('cart', set())
 
+    ###########################
+    # Methods used in cart.pt #
+    ###########################
+
     def items(self):
         """TODO:
 
@@ -71,6 +97,10 @@ class CartView(BrowserView):
 
         return items
 
+    #############################################
+    # Methods also accessible via URL traversal #
+    #############################################
+
     def item_count(self):
         """Return the number of items currently in cart.
 
@@ -87,26 +117,13 @@ class CartView(BrowserView):
             return len(self.cart)
 
     def clear(self):
-        """Remove all items from cart and display the @@cart view or return
-        OK when requested via AJAX.
+        """Remove all items from cart and redirect back to @@cart view.
 
-        This method is accessable via URL traversal (@@cart/clear).
-
-        :return: A 'cart.pt' ViewPageTemplateFile which renders a normal
-            Plone view or a JSON status.OK
-        :rtype: ViewPageTemplateFile or JSON response
-
+        :return: redirect to @@cart
         """
         annotations = IAnnotations(api.user.get_current())
         annotations['cart'] = set()
-
-        if self.request.get('HTTP_X_REQUESTED_WITH', None) == 'XMLHttpRequest':
-            response_dict = {"status": STATUS.OK,
-                             "body": 0,
-                             "err_info": None, }
-            return json.dumps(response_dict)
-        else:
-            return self.template()
+        self.request.response.redirect(self.context.absolute_url() + '/@@cart')
 
 
 class AddToCart(grok.View):
