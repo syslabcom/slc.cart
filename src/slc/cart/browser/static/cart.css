@@ -153,8 +153,7 @@
 }
 
 .clear-cart-button {
-    margin:0 30px;
-    border:none!important;
+    float: right;
 }
 
 .highlightedSearchTerm {

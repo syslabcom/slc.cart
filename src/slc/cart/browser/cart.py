@@ -4,12 +4,20 @@
 from collections import namedtuple
 from five import grok
 from plone import api
+from zope.interface import implements
 from Products.CMFCore.interfaces import IContentish
+from Products.Five.browser import BrowserView
+from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
+from slc.cart.interfaces import ICartAction
 from slc.cart.interfaces import NoResultError
 from zExceptions import NotFound
 from zope.annotation.interfaces import IAnnotations
 from zope.publisher.interfaces import IPublishTraverse
 from Products.CMFCore.interfaces import ISiteRoot
+from zope.component import getAdapter
+from zope.component import getAdapters
+from zope.publisher.interfaces import IPublishTraverse
+
 import json
 import logging
 
@@ -47,12 +55,21 @@ class Cart(grok.View):
         """
         if name in ALLOWED_VIA_URL:
             return getattr(self, name)
+        if name in [_name for _name, action in self.actions]:
+            return self._run_action(name)
         else:
             raise NotFound()
 
     ##################
     # Helper methods #
     ##################
+
+    @property
+    def cart(self):
+        """TODO"""
+        # get the zope.annotations object stored on current member object
+        annotations = IAnnotations(api.user.get_current())
+        return annotations.setdefault('cart', set())
 
     def _get_brain_by_UID(self, UID):
         """Return portal_catalog brains metadata of an item with the specified
@@ -69,17 +86,21 @@ class Cart(grok.View):
 
         return brains[0] if brains else None
 
-    @property
-    def cart(self):
-        """TODO"""
-        # get the zope.annotations object stored on current member object
-        annotations = IAnnotations(api.user.get_current())
-        return annotations.setdefault('cart', set())
+    def _run_action(self, name):
+        """Runs a cart action and redirects back to @@cart.
+
+        TODO: more docstring
+        """
+        action = getAdapter(self.context, ICartAction, name=name)
+        action.run()
+        self.request.response.redirect(
+            api.portal.get().absolute_url() + '/@@cart')
 
     ###########################
     # Methods used in cart.pt #
     ###########################
 
+    @property
     def items(self):
         """TODO:
 
@@ -96,6 +117,15 @@ class Cart(grok.View):
                 logger.warn(NoResultError(msg.format(UID)))
 
         return items
+
+    @property
+    def actions(self):
+        """TODO:
+
+        :returns: Actions that users can perform on cart items.
+        :rtype: list of (name, action) tuples
+        """
+        return getAdapters((self.context, ), ICartAction)
 
     #############################################
     # Methods also accessible via URL traversal #

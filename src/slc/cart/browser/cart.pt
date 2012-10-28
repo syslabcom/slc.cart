@@ -50,30 +50,21 @@
                 </tbody>
             </table>
 
-            <!--a href="#" class="download-button button"
-               title="ZIP archive of all items in your download cart!"
-               tal:attributes="href string:${context/portal_url}/cart?download=1&format=normal">
-                   Download Items
-            </a-->
+            <span id="cart-actions"
+                tal:repeat="action python:[action for name, action in view.actions]">
+                <a href="#"
+                   tal:attributes="class string:cart-action-${action/name};
+                                   href string:${portal_url}/@@cart/${action/name}">
+                    <span tal:content="action/title">delete</span></a
+                >
+                <span tal:condition="not: repeat/action/end">|</span>
+            </span>
+
             <a href="#" class="clear-cart-button" id="clear-cart-button"
                 tal:attributes="href string:${context/portal_url}/cart/clear">
-                Clear your cart.
+                Clear cart
             </a>
 
-            <a href="#" class="rename-button" id="rename-button"
-               tal:attributes="href string:${context/portal_url}/cart/rename">
-                Rename items.
-            </a>
-
-            <a href="#" class="delete-items-button" id="delete-items-button"
-               tal:attributes="href string:${context/portal_url}/cart/delete_items">
-                Delete objects
-            </a>
-
-            <a href="#" class="download-button" id="download-button"
-               tal:attributes="href string:${context/portal_url}/cart/download">
-                Download
-            </a>
         </div>
 
         <div tal:replace="structure provider:plone.belowcontentbody" />
