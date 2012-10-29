@@ -85,7 +85,9 @@ class Cart(grok.View):
     def _run_action(self, name):
         """Runs a cart action and redirects back to @@cart.
 
-        TODO: more docstring
+        :param name: name of the action
+        :type name: string
+        :return: (nothing)
         """
         action = getAdapter(self.context, ICartAction, name=name)
         action.run()
@@ -98,9 +100,9 @@ class Cart(grok.View):
 
     @property
     def items(self):
-        """TODO:
+        """Return a list of metadata about the items currently in cart.
 
-        :returns: Return Brains (metadata) of items in user's cart.
+        :return: Return Brains (metadata) of items in user's cart.
         :rtype: list of Brains
         """
         items = []
