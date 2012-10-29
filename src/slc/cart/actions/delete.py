@@ -2,8 +2,9 @@
 """A Cart Action for deleting all items listed in cart."""
 
 from five import grok
-from slc.cart.interfaces import ICartAction
+from plone import api
 from Products.CMFCore.interfaces import ISiteRoot
+from slc.cart.interfaces import ICartAction
 
 NAME = 'delete'
 TITLE = u'Delete'
@@ -21,7 +22,28 @@ class DeleteAction(grok.Adapter):
     weight = WEIGHT
 
     def run(self):
-        """TODO:
+        """Delete all items currently in cart and clear the cart's contents.
         """
-        cart = self.context.restrictedTraverse('cart').cart
-        print 'delete this stuff: ' + str(cart)
+        cart_view = self.context.restrictedTraverse('cart')
+        request = cart_view.request
+        cart = cart_view.cart
+
+        # NOTE: we must iterate over a copy because we modify the original cart
+        for obj_uuid in cart.copy():
+            obj = api.content.get(UID=obj_uuid)
+            if obj is None:
+                # TODO: what if an item does not exist in the portal anymore?
+                # if it was deleted by someone else for instance? log a warning?
+                pass
+            else:
+                # TODO: what about race conditions if an item is deleted just
+                # before we try to? try-except?
+                api.content.delete(obj)
+
+        # TODO: localize message (w/ messageFactory or how it is called?)
+        api.portal.show_message(
+            message="All the items in cart were successfully deleted.",
+            request=request,
+            type="info")
+
+        cart_view.clear()
