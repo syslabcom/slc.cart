@@ -23,4 +23,5 @@ class DeleteAction(grok.Adapter):
     def run(self):
         """TODO:
         """
-        print 'delete stuff here'
+        cart = self.context.restrictedTraverse('cart').cart
+        print 'delete this stuff: ' + str(cart)

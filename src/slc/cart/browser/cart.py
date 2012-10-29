@@ -41,6 +41,8 @@ class Cart(grok.View):
     grok.context(ISiteRoot)
     grok.require('slc.cart')
 
+    action = None
+
     def publishTraverse(self, request, name):
         """A custom publishTraverse method.
 
@@ -51,10 +53,9 @@ class Cart(grok.View):
         """
         if name in ALLOWED_VIA_URL:
             return getattr(self, name)
-        if name in [_name for _name, action in self.actions]:
-            return self._run_action(name)
         else:
-            raise NotFound()
+            self.action = name
+            return getattr(self, '_run_action')
 
     ##################
     # Helper methods #
@@ -88,17 +89,17 @@ class Cart(grok.View):
 
         return brains[0] if brains else None
 
-    def _run_action(self, name):
-        """Run a cart action and redirect back to @@cart.
+    def _run_action(self):
+        """Run a cart action.
 
         :param name: name of the action
         :type name: string
         :return: (nothing)
         """
-        action = getAdapter(self.context, ICartAction, name=name)
+        if not self.action in [name for name, action in self.actions]:
+            raise NotFound()
+        action = getAdapter(self.context, ICartAction, name=self.action)
         action.run()
-        self.request.response.redirect(
-            api.portal.get().absolute_url() + '/@@cart')
 
     ###########################
     # Methods used in cart.pt #
