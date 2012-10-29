@@ -124,12 +124,15 @@ class Cart(grok.View):
 
     @property
     def actions(self):
-        """Get a list of actions users can perform on cart items.
+        """Get a sorted list of actions users can perform on cart items.
+
+        Actions are sorted by their weight attribute in ascending order.
 
         :return: Actions that users can perform on cart items.
-        :rtype: list of (name, action) tuples
+        :rtype: sorted list of (name, action) tuples
         """
-        return getAdapters((self.context, ), ICartAction)
+        generator = getAdapters((self.context, ), ICartAction)
+        return sorted(generator, key=lambda action: action[1].weight)
 
     #############################################
     # Methods also accessible via URL traversal #

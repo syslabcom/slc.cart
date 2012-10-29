@@ -7,6 +7,7 @@ from Products.CMFCore.interfaces import ISiteRoot
 
 NAME = 'download'
 TITLE = u'Download'
+WEIGHT = 10
 
 
 class DownloadAction(grok.Adapter):
@@ -17,6 +18,7 @@ class DownloadAction(grok.Adapter):
 
     name = NAME
     title = TITLE
+    weight = WEIGHT
 
     def run(self):
         """TODO:

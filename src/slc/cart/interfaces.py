@@ -16,6 +16,7 @@ class ICartAction(Interface):
 
     name = Attribute('Short id if the action, used in URLs, lookups, etc.')
     title = Attribute('User friendly title of the Cart Action.')
+    weight = Attribute('An integer used for sorting the actions.')
 
     def run():
         """Perform the action."""

@@ -7,6 +7,7 @@ from Products.CMFCore.interfaces import ISiteRoot
 
 NAME = 'delete'
 TITLE = u'Delete'
+WEIGHT = 20
 
 
 class DeleteAction(grok.Adapter):
@@ -17,6 +18,7 @@ class DeleteAction(grok.Adapter):
 
     name = NAME
     title = TITLE
+    weight = WEIGHT
 
     def run(self):
         """TODO:
