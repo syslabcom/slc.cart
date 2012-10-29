@@ -62,7 +62,13 @@ class Cart(grok.View):
 
     @property
     def cart(self):
-        """TODO"""
+        """Return a list of items currently in cart.
+
+        Also initialize the cart along the way if necessary.
+
+        :return: list of UUIDs of all the items in cart
+        :rtype: list of strings
+        """
         # get the zope.annotations object stored on current member object
         annotations = IAnnotations(api.user.get_current())
         return annotations.setdefault('cart', set())
@@ -83,7 +89,7 @@ class Cart(grok.View):
         return brains[0] if brains else None
 
     def _run_action(self, name):
-        """Runs a cart action and redirects back to @@cart.
+        """Run a cart action and redirect back to @@cart.
 
         :param name: name of the action
         :type name: string
@@ -118,9 +124,9 @@ class Cart(grok.View):
 
     @property
     def actions(self):
-        """TODO:
+        """Get a list of actions users can perform on cart items.
 
-        :returns: Actions that users can perform on cart items.
+        :return: Actions that users can perform on cart items.
         :rtype: list of (name, action) tuples
         """
         return getAdapters((self.context, ), ICartAction)
