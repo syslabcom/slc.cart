@@ -28,19 +28,23 @@ class DeleteAction(grok.Adapter):
         request = cart_view.request
         cart = cart_view.cart
 
-        # NOTE: we must iterate over a copy because we modify the original cart
-        for obj_uuid in cart.copy():
+        for obj_uuid in cart:
             obj = api.content.get(UID=obj_uuid)
             if obj is None:
-                # TODO: what if an item does not exist in the portal anymore?
-                # if it was deleted by someone else for instance? log a warning?
+                # An object that is in cart was apparently deleted by someone
+                # else and dosn't exist anymore, so there's nothing to do.
                 pass
             else:
-                # TODO: what about race conditions if an item is deleted just
-                # before we try to? try-except?
-                api.content.delete(obj)
+                try:
+                    api.content.delete(obj)
+                except:
+                    # The operation most likely failed because obj was deleted
+                    # right before we tried to delete it. That's OK, because
+                    # it is deleted now, so there's nothing more to do.
+                    # NOTE: there is a slight chance we mask some other errors
+                    # this way so we might want to change this ...
+                    pass
 
-        # TODO: localize message (w/ messageFactory or how it is called?)
         api.portal.show_message(
             message="All the items in cart were successfully deleted.",
             request=request,
