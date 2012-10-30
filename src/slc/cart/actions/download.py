@@ -2,8 +2,12 @@
 """A Cart Action for downloading all items listed in cart as a ZIP file."""
 
 from five import grok
-from slc.cart.interfaces import ICartAction
+from plone import api
 from Products.CMFCore.interfaces import ISiteRoot
+from slc.cart.interfaces import ICartAction
+from StringIO import StringIO
+
+import zipfile
 
 NAME = 'download'
 TITLE = u'Download'
@@ -21,6 +25,46 @@ class DownloadAction(grok.Adapter):
     weight = WEIGHT
 
     def run(self):
-        """TODO:
+        """Download cart content.
+
+        Before downloading items are packed into a zip archive (only the
+        items that are files are included).
         """
-        print 'download stuff here'
+        cart_view = self.context.restrictedTraverse('cart')
+        request = self.context.REQUEST
+        cart = cart_view.cart
+
+        if not cart:
+            api.portal.show_message(
+                message=u"Can't download, no items found.",   # TODO: localize
+                request=request,
+                type="error"
+            )
+            request.response.redirect(self.context.absolute_url() + '/@@cart')
+
+        output = StringIO()
+        zf = zipfile.ZipFile(output, mode='w')
+
+        try:
+            for obj_uuid in cart:
+                obj = api.content.get(UID=obj_uuid)
+                if obj is None:
+                    continue  # TODO: log this?
+
+                # make sure that obj is a file
+                filename = obj.getFilename()
+                if not filename:   # TODO: this check OK?
+                    continue
+                zf.writestr(filename, obj.data)
+        finally:
+            zf.close()
+
+        request.response.setHeader(
+            "Content-Type",
+            "application/zip"
+        )
+        request.response.setHeader(
+            'Content-Disposition',
+            "attachment; filename=CartContents.zip"
+        )
+        return output.getvalue()

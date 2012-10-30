@@ -99,7 +99,7 @@ class Cart(grok.View):
         if not self.action in [name for name, action in self.actions]:
             raise NotFound()
         action = getAdapter(self.context, ICartAction, name=self.action)
-        action.run()
+        return action.run()
 
     ###########################
     # Methods used in cart.pt #
