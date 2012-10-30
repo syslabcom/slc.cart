@@ -102,7 +102,7 @@
                 //flip parity classes of all the rows below (odd to even, even to odd)
                 setTimeout(function () {
                     flipParityClasses($nextRows);
-                }, FADEOUT_MS);   // should be the same delay as for the slideUp effect
+                }, FADEOUT_MS);   // should be the same delay as for the fadeout effect
 
             } else {
                 // toggle both links: the add-to-cart link will become
