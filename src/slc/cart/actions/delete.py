@@ -25,7 +25,7 @@ class DeleteAction(grok.Adapter):
         """Delete all items currently in cart and clear the cart's contents.
         """
         cart_view = self.context.restrictedTraverse('cart')
-        request = cart_view.request
+        request = self.context.REQUEST
         cart = cart_view.cart
 
         for obj_uuid in cart:
