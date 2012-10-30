@@ -4,6 +4,7 @@
 from five import grok
 from plone import api
 from Products.CMFCore.interfaces import ISiteRoot
+from slc.cart import _
 from slc.cart.interfaces import ICartAction
 
 NAME = 'delete'
@@ -24,8 +25,8 @@ class DeleteAction(grok.Adapter):
     def run(self):
         """Delete all items currently in cart and clear the cart's contents.
         """
+        request = self.context.REQUEST
         cart_view = self.context.restrictedTraverse('cart')
-        request = cart_view.request
         cart = cart_view.cart
 
         # NOTE: we must iterate over a copy because we modify the original cart
@@ -40,9 +41,8 @@ class DeleteAction(grok.Adapter):
                 # before we try to? try-except?
                 api.content.delete(obj)
 
-        # TODO: localize message (w/ messageFactory or how it is called?)
         api.portal.show_message(
-            message="All the items in cart were successfully deleted.",
+            message=_(u"All the items in cart were successfully deleted."),
             request=request,
             type="info")
 

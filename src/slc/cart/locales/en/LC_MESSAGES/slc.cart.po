@@ -1,0 +1,3 @@
+#: src/slc/cart/actions/delete.py:45
+msgid "All the items in cart were successfully deleted."
+msgstr "All the items in cart were successfully deleted."
