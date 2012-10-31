@@ -180,10 +180,9 @@ class AddToCart(grok.View):
             status = STATUS.ERROR
             body = None
             message = "Cart full (limit is {0} item(s))".format(limit)
-            # TODO: error label should not be hard-coded!
             err_info = dict(msg=message,
                             level=ERR_LEVEL.WARNING,
-                            label="Fehler")
+                            label="Error")
         else:
             cart.add(api.content.get_uuid(obj=self.context))
             status = STATUS.OK

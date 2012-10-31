@@ -37,7 +37,7 @@ class DownloadAction(grok.Adapter):
 
         if not cart:
             api.portal.show_message(
-                message=u"Can't download, no items found.",   # TODO: localize
+                message=u"Can't download, no items found.",
                 request=request,
                 type="error"
             )

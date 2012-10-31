@@ -236,7 +236,7 @@ class TestCart(IntegrationTestCase):
             "body": None,
             "err_info": dict(msg='Cart full (limit is 1 item(s))',
                              level=ERR_LEVEL.WARNING,
-                             label="Fehler",)  # TODO: label hardcoded
+                             label="Error",)
         }
 
         # Set a lower limit, since it's 100 by default'
