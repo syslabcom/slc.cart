@@ -25,7 +25,15 @@ class CutAction(grok.Adapter):
     weight = WEIGHT
 
     def run(self):
-        """Cut all items currently in cart and add them to clipboard."""
+        """Cut all items currently in cart and add them to clipboard.
+
+        The tricky part here is that the method that Plone uses
+        (manage_cutObjects) was only ment to work on objects of the same
+        parent. However, our use case allows cutting objects of different
+        parents. Hence we need to go one level deeper and reimplement some
+        stuff that manage_cutObjects does in our own way.
+
+        """
         cart_view = self.context.restrictedTraverse('cart')
         request = self.context.REQUEST
         cart = cart_view.cart

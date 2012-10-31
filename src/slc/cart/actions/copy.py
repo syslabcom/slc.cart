@@ -15,7 +15,15 @@ WEIGHT = 15
 
 
 class CopyAction(grok.Adapter):
-    """Copy Action implementation that copies items in cart to clipboard."""
+    """Copy Action implementation that copies items in cart to clipboard.
+
+    The tricky part here is that the method that Plone uses
+    (manage_cupyObjects) was only ment to work on objects of the same
+    parent. However, our use case allows copying objects of different
+    parents. Hence we need to go one level deeper and reimplement some
+    stuff that manage_copyObjects does in our own way.
+
+    """
     grok.context(ISiteRoot)
     grok.provides(ICartAction)
     grok.name(NAME)
