@@ -6,6 +6,10 @@ from plone import api
 from Products.CMFCore.interfaces import ISiteRoot
 from slc.cart.interfaces import ICartAction
 
+import logging
+
+logger = logging.getLogger("slc.cart")
+
 NAME = 'delete'
 TITLE = u'Delete'
 WEIGHT = 20
@@ -36,12 +40,13 @@ class DeleteAction(grok.Adapter):
             else:
                 try:
                     api.content.delete(obj)
-                except:
+                except Exception, e:
                     # The operation most likely failed because obj was deleted
                     # right before we tried to delete it. That's OK, because
-                    # it is deleted now, so there's nothing more to do.
-                    # NOTE: there is a slight chance we mask some other errors
-                    # this way so we might want to change this ...
+                    # it is deleted now, so there's nothing more to do. But we
+                    # still write it to log in case we masked some other error
+                    # that could be relevant
+                    logger.info(e)
                     pass
 
         api.portal.show_message(
