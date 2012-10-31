@@ -199,7 +199,9 @@ class AddToCart(grok.View):
         else:
             if err_info:
                 api.portal.show_message(
-                    message=err_info['msg'], request=self.request, type='error')
+                    message=err_info['msg'],
+                    type='error',
+                    request=self.request, )
             self.request.response.redirect(portal.absolute_url() + '/@@cart')
 
 
