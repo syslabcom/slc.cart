@@ -107,7 +107,7 @@ class Cart(grok.View):
 
     @property
     def items(self):
-        """Return a list of metadata about the items currently in cart.
+        """Return metadata about items currently in cart.
 
         :return: Return Brains (metadata) of items in user's cart.
         :rtype: list of Brains
@@ -132,8 +132,8 @@ class Cart(grok.View):
         :return: Actions that users can perform on cart items.
         :rtype: sorted list of (name, action) tuples
         """
-        generator = getAdapters((self.context, ), ICartAction)
-        return sorted(generator, key=lambda action: action[1].weight)
+        actions = getAdapters((self.context, ), ICartAction)
+        return sorted(actions, key=lambda action: action[1].weight)
 
     #############################################
     # Methods also accessible via URL traversal #
