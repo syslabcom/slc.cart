@@ -50,7 +50,7 @@ class DeleteAction(grok.Adapter):
                     pass
 
         api.portal.show_message(
-            message="All the items in cart were successfully deleted.",
+            message="All items in cart were successfully deleted.",
             request=request,
             type="info")
 
