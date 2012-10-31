@@ -42,8 +42,7 @@ class CopyAction(grok.Adapter):
                 continue
 
             if not obj.cb_isCopyable():
-                # TODO: write something to log?
-                continue
+                continue  # TODO: write to log? error?
 
             m = Moniker(obj)
             obj_list.append(m.dump())

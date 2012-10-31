@@ -50,7 +50,7 @@ class DownloadAction(grok.Adapter):
             for obj_uuid in cart:
                 obj = api.content.get(UID=obj_uuid)
                 if obj is None:
-                    continue  # TODO: log this?
+                    continue
 
                 # make sure that obj is a file
                 filename = obj.getFilename()
