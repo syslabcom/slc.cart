@@ -40,18 +40,6 @@ class TestInstall(IntegrationTestCase):
 
         self.assertIn('++resource++slc.cart/cart.js', ids)
 
-    # jsregistry.xml
-    def test_ajaxified_search_results_disabled(self):
-        """By default, plone.app.search reloads search results with AJAX. This
-        means that our custom jQuery code that runs on document.ready does not
-        work on subsequent searches. This test checks that AJAX loading of
-        search results is disabled, to make our custom code work.
-        """
-        resources = self.portal.portal_javascripts.getResources()
-        search_js = [r for r in resources
-                     if r.getId() == '++resource++search.js'][0]
-        self.assertFalse(search_js.getEnabled())
-
     # actions.xml
     def test_cart_actions_added(self):
         """Test if cart actions are added to user and document actions."""

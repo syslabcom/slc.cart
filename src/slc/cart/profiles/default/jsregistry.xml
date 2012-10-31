@@ -12,10 +12,4 @@
         id="++resource++slc.cart/cart.js"
     />
 
-    <!-- Disable AJAX loading of search results -->
-    <javascript
-        enabled="False"
-        id="++resource++search.js"
-    />
-
 </object>
