@@ -60,7 +60,7 @@ class CopyAction(grok.Adapter):
         request['__cp'] = cp_data
 
         api.portal.show_message(
-            message="Copied {0} object(s)".format(len(obj_list)),
+            message="{0} item(s) copied.".format(len(obj_list)),
             request=request,
             type="info")
 
