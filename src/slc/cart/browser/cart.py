@@ -47,7 +47,7 @@ class Cart(grok.View):
         """A custom publishTraverse method.
 
         This enables us to use URL traversal to run cart actions. Examples:
-        @@cart/clear, @@cart/download, etc. URL access is only allowed for
+        @@cart/delete, @@cart/download, etc. URL access is only allowed for
         attributes listed in ALLOWED_VIA_URL.
 
         """
