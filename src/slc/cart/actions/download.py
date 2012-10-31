@@ -29,6 +29,7 @@ class DownloadAction(grok.Adapter):
 
         Before downloading items are packed into a zip archive (only the
         items that are files are included).
+
         """
         cart_view = self.context.restrictedTraverse('cart')
         request = self.context.REQUEST

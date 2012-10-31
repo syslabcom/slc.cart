@@ -25,8 +25,7 @@ class CutAction(grok.Adapter):
     weight = WEIGHT
 
     def run(self):
-        """Copy all items currently in cart to clipboard
-        """
+        """Cut all items currently in cart and add them to clipboard."""
         cart_view = self.context.restrictedTraverse('cart')
         request = self.context.REQUEST
         cart = cart_view.cart

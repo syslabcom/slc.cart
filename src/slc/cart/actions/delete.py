@@ -22,8 +22,7 @@ class DeleteAction(grok.Adapter):
     weight = WEIGHT
 
     def run(self):
-        """Delete all items currently in cart and clear the cart's contents.
-        """
+        """Delete all items currently in cart and clear the cart's contents."""
         cart_view = self.context.restrictedTraverse('cart')
         request = self.context.REQUEST
         cart = cart_view.cart
