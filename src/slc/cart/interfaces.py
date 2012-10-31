@@ -10,9 +10,8 @@ class ISlcCartLayer(IDefaultPloneLayer):
     """Marker interface that defines a Zope 3 browser layer."""
 
 
-# Cart Action specification
 class ICartAction(Interface):
-    """Definition of a Cart Action."""
+    """Specification of what a Cart Action needs to provide."""
 
     name = Attribute('Short id if the action, used in URLs, lookups, etc.')
     title = Attribute('User friendly title of the Cart Action.')
