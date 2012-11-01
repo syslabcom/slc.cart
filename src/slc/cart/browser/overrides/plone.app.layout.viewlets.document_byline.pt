@@ -52,19 +52,20 @@
 
   <!-- the following cartLink section is new in this template override,
        it's not present in the original document_byline template -->
-  <span class="cartLink"
-        tal:define="in_cart here/@@is-in-cart">
-    &mdash;
-    <a href="#"
-       class="add-to-cart"
-       tal:attributes="href string:${here/absolute_url}/@@add-to-cart;
-                       style python: 'display: inline' if not in_cart else 'display: none'"
-       i18n:translate="label_add_to_cart">Add to Cart</a>
-    <a href="#"
-       class="remove-from-cart"
-       tal:attributes="href string:${here/absolute_url}/@@remove-from-cart;
-                       style python: 'display: inline' if in_cart else 'display: none'"
-       i18n:translate="label_remove_from_cart">Remove from Cart</a>
+  <span class="cartLink" tal:condition="nocall:here/@@is-in-cart|nothing">
+    <tal:cart-link define="in_cart here/@@is-in-cart">
+      &mdash;
+      <a href="#"
+         class="add-to-cart"
+         tal:attributes="href string:${here/absolute_url}/@@add-to-cart;
+                         style python: 'display: inline' if not in_cart else 'display: none'"
+         i18n:translate="label_add_to_cart">Add to Cart</a>
+      <a href="#"
+         class="remove-from-cart"
+         tal:attributes="href string:${here/absolute_url}/@@remove-from-cart;
+                         style python: 'display: inline' if in_cart else 'display: none'"
+         i18n:translate="label_remove_from_cart">Remove from Cart</a>
+    </tal:cart-link>
   </span>
 
   <div class="documentContributors"
