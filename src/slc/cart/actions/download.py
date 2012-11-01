@@ -48,14 +48,16 @@ class DownloadAction(grok.Adapter):
 
         try:
             for obj_uuid in cart:
+                # make sure obj exists
                 obj = api.content.get(UID=obj_uuid)
                 if obj is None:
                     continue
 
-                # make sure that obj is a file
+                # make sure obj is a file by checking if filename is set
                 filename = obj.getFilename()
-                if not filename:   # TODO: this check OK?
+                if not filename:
                     continue
+
                 zf.writestr(filename, obj.data)
         finally:
             zf.close()
