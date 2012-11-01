@@ -2,7 +2,6 @@
 
 from contextlib import contextmanager
 from plone import api
-from Products.CMFCore.utils import getToolByName
 from Products.statusmessages.interfaces import IStatusMessage
 from slc.cart.browser.cart import ERR_LEVEL
 from slc.cart.browser.cart import STATUS

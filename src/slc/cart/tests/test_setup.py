@@ -2,7 +2,6 @@
 """Setup/installation tests for this package."""
 
 from plone import api
-from Products.CMFCore.utils import getToolByName
 from slc.cart.tests.base import IntegrationTestCase
 
 import unittest2 as unittest
@@ -14,7 +13,7 @@ class TestInstall(IntegrationTestCase):
     def setUp(self):
         """Custom shared utility setup for tests."""
         self.portal = self.layer['portal']
-        self.installer = getToolByName(self.portal, 'portal_quickinstaller')
+        self.installer = api.portal.get_tool('portal_quickinstaller')
 
     def test_product_installed(self):
         """Test if slc.cart is installed with portal_quickinstaller."""
@@ -43,7 +42,7 @@ class TestInstall(IntegrationTestCase):
     # actions.xml
     def test_cart_actions_added(self):
         """Test if cart actions are added to user and document actions."""
-        actions_tool = getToolByName(self.portal, 'portal_actions')
+        actions_tool = api.portal.get_tool('portal_actions')
 
         # Check if 'cart' has been added to user actions
         user_actions = actions_tool.user.listActions()

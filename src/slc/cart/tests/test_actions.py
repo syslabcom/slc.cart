@@ -1,7 +1,6 @@
 """Testing the  Download cart."""
 
 from plone import api
-from Products.CMFCore.utils import getToolByName
 from slc.cart.tests.base import IntegrationTestCase
 from zope.interface import alsoProvides
 
