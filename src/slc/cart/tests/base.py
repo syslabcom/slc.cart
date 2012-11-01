@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """Base module for unittesting."""
 
-from plone import api
 from plone.app.testing import applyProfile
 from plone.app.testing import FunctionalTesting
 from plone.app.testing import IntegrationTesting
@@ -32,19 +31,9 @@ class SlcCartLayer(PloneSandboxLayer):
         # Install into Plone site using portal_setup
         applyProfile(portal, 'slc.cart:default')
 
-        # Login and create some test
+        # Login as Manager to run tests
         setRoles(portal, TEST_USER_ID, ['Manager'])
         login(portal, TEST_USER_NAME)
-        api.content.create(
-            container=portal,
-            type='Folder',
-            title='Folder'
-        )
-
-        # Commit so that the test browser sees these objects
-        portal.portal_catalog.clearFindAndRebuild()
-        import transaction
-        transaction.commit()
 
     def tearDownZope(self, app):
         """Tear down Zope."""

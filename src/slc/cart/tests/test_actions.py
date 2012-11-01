@@ -1,4 +1,5 @@
-"""Testing the  Download cart."""
+# -*- coding: utf-8 -*-
+"""Testing ICartActions."""
 
 from plone import api
 from slc.cart.tests.base import IntegrationTestCase
@@ -7,8 +8,8 @@ from zope.interface import alsoProvides
 import unittest2 as unittest
 
 
-class TestCart(IntegrationTestCase):
-    """ Test Cart BrowserView related stuff. """
+class TestActions(IntegrationTestCase):
+    """Test ICartAction actions."""
 
     def setUp(self):
         """Custom shared utility setup for tests."""
@@ -21,8 +22,7 @@ class TestCart(IntegrationTestCase):
         self.request = self.layer['request']
         self.cart_view = self.portal.restrictedTraverse('@@cart')
 
-        # create test content # TODO: should have some files! not just documents
-        # so that they get included in the zip and downloaded!
+        # create test content
         self.item1 = api.content.create(
             container=self.portal, id='item1', type='Document', )
         self.item2 = api.content.create(

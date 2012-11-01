@@ -1,4 +1,5 @@
-"""Testing the  Download cart."""
+# -*- coding: utf-8 -*-
+"""Testing the @@cart view."""
 
 from contextlib import contextmanager
 from plone import api
@@ -23,10 +24,7 @@ class TestCart(IntegrationTestCase):
 
         # shortcuts
         self.portal = self.layer['portal']
-        self.catalog = getToolByName(self.portal, 'portal_catalog')
-        self.workflow = getToolByName(self.portal, "portal_workflow")
-        self.view = self.portal.unrestrictedTraverse('@@cart')
-        self.member = self.portal.portal_membership.getAuthenticatedMember()
+        self.view = self.portal.restrictedTraverse('@@cart')
 
         # create test content
         self.item1 = api.content.create(
