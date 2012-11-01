@@ -43,22 +43,28 @@ class TestCart(IntegrationTestCase):
         self.assertEquals(self.cart_view.item_count(), 2)
 
         # now delete all items in cart and see what happens
-        action = self.cart_view.publishTraverse(self.cart_view.request, "delete")
-        action()
+        self.cart_view.action = 'delete'
+        self.cart_view._run_action()
 
         # test that items 1 and 3 were indeed deleted, while item 2 was not
-        self.assertIsNone(api.content.get(UID=self.item1.UID()))
-        self.assertIsNone(api.content.get(UID=self.item3.UID()))
-        self.assertIsNotNone(api.content.get(UID=self.item2.UID()))
+        self.assertIsNone(self.portal.get('item1'))
+        self.assertIsNone(self.portal.get('item3'))
+        self.assertIsNotNone(self.portal.get('item2'))
 
         # the cart itself should now be empty
         self.assertEquals(self.cart_view.item_count(), 0)
 
-        # TODO: action is bound to cart._run_action, which runs the delete
-        # action (DeleteAction.run()). The latter sets a portal message at the
-        # end - test this too? Perhaps by mocking api.portal.show_message?
-
     def test_download(self):
+        """TODO:
+        """
+        pass
+
+    def test_copy(self):
+        """TODO:
+        """
+        pass
+
+    def test_cut(self):
         """TODO:
         """
         pass
