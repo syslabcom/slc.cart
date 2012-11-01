@@ -36,18 +36,8 @@ class DeleteAction(grok.Adapter):
             if obj is None:
                 # An object that is in cart was apparently deleted by someone
                 # else and dosn't exist anymore, so there's nothing to do.
-                pass
-            else:
-                try:
-                    api.content.delete(obj)
-                except Exception, e:
-                    # The operation most likely failed because obj was deleted
-                    # right before we tried to delete it. That's OK, because
-                    # it is deleted now, so there's nothing more to do. But we
-                    # still write it to log in case we masked some other error
-                    # that could be relevant
-                    logger.info(e)
-                    pass
+                continue
+            api.content.delete(obj)
 
         api.portal.show_message(
             message="All items in cart were successfully deleted.",
