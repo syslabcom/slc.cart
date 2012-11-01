@@ -117,45 +117,6 @@
         });  //end getJSON
     }
 
-    // Remove all items from the cart.
-    // NOTE: only relevant for the @@cart view
-    function removeAll() {
-
-        var url,
-            $row,
-            $table;
-
-        if (!isCartView) {
-            return;  // nothing to do, only relevant on the @@cart view
-        }
-
-        $table = $("table#cart-list");
-        if (!$table) {
-            // Some kind of an UI error probably, #cart-list not found
-            // for now silently fail ...
-            return;
-        }
-
-        url = portal_url + "/cart/clear";
-
-        $.getJSON(url, function (data) {
-            if (data.status !== STATUS.OK) {
-                // for now silently fail ...
-                return;
-            }
-
-            $table.find("tbody > tr").each(function () {
-                $row = $(this);
-                $row.fadeOut(FADEOUT_MS, "swing", function () {
-                    $row.remove();
-                });
-            });
-
-            nItems = data.body;  // server returns the new item count
-            updateCartLabel();
-        });
-    }
-
     // Add the item the link points to to the cart.
     function addItem($link) {
 
@@ -185,15 +146,6 @@
             $(this).click(function (event) {
                 event.preventDefault();
                 removeItem($(this));
-            });
-        });
-
-        // a link for clearing the cart content
-        // (only present on @@cart view)
-        $("a.clear-cart-button").each(function () {
-            $(this).click(function (event) {
-                event.preventDefault();
-                removeAll();
             });
         });
 

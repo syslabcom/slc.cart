@@ -161,6 +161,12 @@ class Cart(grok.View):
         """
         annotations = IAnnotations(api.user.get_current())
         annotations['cart'] = set()
+
+        api.portal.show_message(
+            message="Cart cleared.",
+            type='info',
+            request=self.request, )
+
         self.request.response.redirect(self.context.absolute_url() + '/@@cart')
 
 
