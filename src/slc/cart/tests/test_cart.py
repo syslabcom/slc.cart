@@ -3,10 +3,15 @@
 
 from contextlib import contextmanager
 from plone import api
+from plone.app.testing import TEST_USER_NAME
+from plone.app.testing import TEST_USER_PASSWORD
+from plone.testing.z2 import Browser
 from Products.statusmessages.interfaces import IStatusMessage
 from slc.cart.browser.cart import ERR_LEVEL
 from slc.cart.browser.cart import STATUS
+from slc.cart.tests.base import FunctionalTestCase
 from slc.cart.tests.base import IntegrationTestCase
+from urllib2 import HTTPError
 from zope.interface import alsoProvides
 
 import json
@@ -137,8 +142,7 @@ class TestCart(IntegrationTestCase):
             self.assertEqual(int(self.view.item_count()), 1)
 
     def test_add(self):
-        """Test if item is correctly added to the cart.
-        """
+        """Test if item is correctly added to the cart."""
         cart = self.portal.restrictedTraverse('cart').cart
         self.assertEqual(len(cart), 0)
 
@@ -315,6 +319,45 @@ class TestCart(IntegrationTestCase):
 
         with self.disable_ajax():
             self.assertEqual(int(self.view.item_count()), 0)
+
+
+class TestCartTraversal(FunctionalTestCase):
+    """Test traversing to @@cart and its methods/actions."""
+
+    def setUp(self):
+        """Custom shared utility setup for tests."""
+        # shortcuts
+        self.portal = self.layer['portal']
+        self.request = self.layer['request']
+        self.browser = Browser(self.portal)
+
+        self.browser.addHeader('Authorization', 'Basic %s:%s' %
+                               (TEST_USER_NAME, TEST_USER_PASSWORD,))
+
+    def test_non_existant_action(self):
+        """Test NotFound raised when traversing to a non-existant action."""
+        with self.assertRaises(HTTPError):
+            self.browser.open('http://nohost/plone/@@cart/foo')
+            self.assertIn('This page does not seem to exist',
+                          self.browser.contents)
+
+    def test_traverse_to_method(self):
+        """Test traversing to a @@cart method.
+
+        Traversable methods are listed in ALLOWED_VIA_URL in cart.py.
+
+        """
+        self.browser.open('http://nohost/plone/@@cart/clear')
+        self.assertIn('Cart cleared.', self.browser.contents)
+
+        self.browser.open('http://nohost/plone/@@cart/item_count')
+        self.assertEquals('', self.browser.contents)
+
+    def test_traverse_to_action(self):
+        """Test traversing to a ICartAction."""
+        self.browser.open('http://nohost/plone/@@cart/delete')
+        self.assertIn('All items in cart were successfully deleted.',
+                      self.browser.contents)
 
 
 def test_suite():
