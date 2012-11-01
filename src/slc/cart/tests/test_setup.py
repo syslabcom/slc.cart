@@ -31,6 +31,14 @@ class TestInstall(IntegrationTestCase):
         from plone.browserlayer import utils
         self.failUnless(ISlcCartLayer in utils.registered_layers())
 
+    # cssregistry.xml
+    def test_css_registered(self):
+        """Test if slc.cart's css files are registered with portal_css."""
+        resources = self.portal.portal_css.getResources()
+        ids = [r.getId() for r in resources]
+
+        self.assertIn('++resource++slc.cart/cart.css', ids)
+
     # jsregistry.xml
     def test_js_registered(self):
         """Test if JavaScript files are registered with portal_javascript."""
@@ -57,6 +65,15 @@ class TestInstall(IntegrationTestCase):
         limit = api.portal.get_registry_record('slc.cart.limit')
 
         self.assertEquals(limit, 100)
+
+    # rolemap.xml
+    def test_authenticate_can_use_cart(self):
+        """Test that all logged-in users can use the cart."""
+
+        self.assertEquals(
+            self.portal._slc_cart__Use_cart_Permission,
+            ('Manager', 'Authenticated')
+        )
 
 
 def test_suite():
