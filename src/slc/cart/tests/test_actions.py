@@ -18,19 +18,22 @@ class TestCart(IntegrationTestCase):
 
         # shortcuts
         self.portal = self.layer['portal']
-        self.catalog = getToolByName(self.portal, 'portal_catalog')
-        self.workflow = getToolByName(self.portal, "portal_workflow")
-        self.cart_view = self.portal.unrestrictedTraverse('@@cart')
-        self.member = self.portal.portal_membership.getAuthenticatedMember()
+        self.request = self.layer['request']
+        self.cart_view = self.portal.restrictedTraverse('@@cart')
 
         # create test content # TODO: should have some files! not just documents
         # so that they get included in the zip and downloaded!
         self.item1 = api.content.create(
-            container=self.portal, type='Document', id='item1')
+            container=self.portal, id='item1', type='Document', )
         self.item2 = api.content.create(
-            container=self.portal, type='Document', id='item2')
+            container=self.portal, id='item2', type='Document', )
         self.item3 = api.content.create(
-            container=self.portal, type='Document', id='item3')
+            container=self.portal,
+            id='item3',
+            type='File',
+            file='foo'
+        )
+        self.item3.setFilename('foo.txt')
 
     def test_delete(self):
         """Test if delete action correctly deletes all items present in
@@ -39,7 +42,6 @@ class TestCart(IntegrationTestCase):
         # add some (but not all) items to cart
         self.item1.restrictedTraverse("add-to-cart").render()
         self.item3.restrictedTraverse("add-to-cart").render()
-
         self.assertEquals(self.cart_view.item_count(), 2)
 
         # now delete all items in cart and see what happens
@@ -55,9 +57,18 @@ class TestCart(IntegrationTestCase):
         self.assertEquals(self.cart_view.item_count(), 0)
 
     def test_download(self):
-        """TODO:
-        """
-        pass
+        """Test for 'download' cart action."""
+        # add all items to cart
+        self.item1.restrictedTraverse("add-to-cart").render()
+        self.item2.restrictedTraverse("add-to-cart").render()
+        self.item3.restrictedTraverse("add-to-cart").render()
+        self.assertEquals(self.cart_view.item_count(), 3)
+
+        # now delete all items in cart and see what happens
+        self.cart_view.action = 'download'
+        output = self.cart_view._run_action()
+
+        self.assertIn('foo.txt', output)
 
     def test_copy(self):
         """TODO:
