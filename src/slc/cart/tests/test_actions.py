@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 """Testing ICartActions."""
 
+from marshal import loads
 from plone import api
 from slc.cart.tests.base import IntegrationTestCase
+from urllib import unquote
+from zlib import decompress
 from zope.interface import alsoProvides
 
 import unittest2 as unittest
@@ -71,14 +74,83 @@ class TestActions(IntegrationTestCase):
         self.assertIn('foo.txt', output)
 
     def test_copy(self):
-        """TODO:
+        """Test if 'copy' cart action writes correct copydata to a cookie.
         """
-        pass
+        # add some of the items to cart
+        self.item1.restrictedTraverse("add-to-cart").render()
+        self.item2.restrictedTraverse("add-to-cart").render()
+        self.assertEquals(self.cart_view.item_count(), 2)
+
+        # now copy items in cart and examine the cookie
+        self.cart_view.action = 'copy'
+        self.cart_view._run_action()
+
+        cookies = self.cart_view.response.cookies
+
+        cp_cookie = cookies.get('__cp')
+        self.assertIsNotNone(cp_cookie)
+
+        val = cp_cookie.get('value')
+        self.assertIsNotNone(val)
+
+        # Data stored in cookie was modified like this:
+        #   quote(compress(dumps(data), 9))
+        # To get data in original format, we need to apply
+        # inverse operations on it in correct order
+        try:
+            val = loads(decompress(unquote(val)))
+        except Exception as ex:
+            self.fail("Could not decode cookie value: {0}".format(ex.strerror))
+
+        self.assertEquals(len(val[1]), 2)
+
+        expected_val = (0, [('', 'plone', 'item1'), ('', 'plone', 'item2')])
+        self.assertEquals(val[0], expected_val[0])
+        self.assertIn(val[1][0], expected_val[1])
+        self.assertIn(val[1][1], expected_val[1])
+
+        # item 3 data should NOT be in a cookie
+        self.assertNotIn(('', 'plone', 'item3'), val[1])
 
     def test_cut(self):
-        """TODO:
+        """Test if 'cut' cart action writes correct cutdata to a cookie.
         """
-        pass
+        # add some of the items to cart
+        self.item1.restrictedTraverse("add-to-cart").render()
+        self.item2.restrictedTraverse("add-to-cart").render()
+        self.assertEquals(self.cart_view.item_count(), 2)
+
+        # now cut items in cart and examine the cookie
+        self.cart_view.action = 'cut'
+        self.cart_view._run_action()
+
+        cookies = self.cart_view.response.cookies
+
+        cp_cookie = cookies.get('__cp')
+        self.assertIsNotNone(cp_cookie)
+
+        val = cp_cookie.get('value')
+        self.assertIsNotNone(val)
+
+        # Data stored in cookie was modified like this:
+        #   quote(compress(dumps(data), 9))
+        # To get data in original format, we need to apply
+        # inverse operations on it in correct order
+        try:
+            val = loads(decompress(unquote(val)))
+        except Exception as ex:
+            self.fail("Could not decode cookie value: {0}".format(ex.strerror))
+
+        # Only the file gets cut!
+        self.assertEquals(len(val[1]), 2)
+
+        expected_val = (1, [('', 'plone', 'item1'), ('', 'plone', 'item2')])
+        self.assertEquals(val[0], expected_val[0])
+        self.assertIn(val[1][0], expected_val[1])
+        self.assertIn(val[1][1], expected_val[1])
+
+        # item 3 data should NOT be in a cookie
+        self.assertNotIn(('', 'plone', 'item3'), val[1])
 
 
 def test_suite():
