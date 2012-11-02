@@ -62,12 +62,20 @@ class DownloadAction(grok.Adapter):
         finally:
             zf.close()
 
-        request.response.setHeader(
-            "Content-Type",
-            "application/zip"
-        )
-        request.response.setHeader(
-            'Content-Disposition',
-            "attachment; filename=CartContents.zip"
-        )
-        return output.getvalue()
+        if zf.filelist:
+            request.response.setHeader(
+                "Content-Type",
+                "application/zip"
+            )
+            request.response.setHeader(
+                'Content-Disposition',
+                "attachment; filename=CartContents.zip"
+            )
+            return output.getvalue()
+        else:
+            api.portal.show_message(
+                message="There are no downloadable items in your cart.",
+                request=request,
+                type="warning")
+            portal = api.portal.get()
+            request.response.redirect(portal.absolute_url() + '/@@cart')
