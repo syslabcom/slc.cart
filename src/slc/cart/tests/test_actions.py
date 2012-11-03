@@ -67,11 +67,15 @@ class TestActions(IntegrationTestCase):
         self.item3.restrictedTraverse("add-to-cart").render()
         self.assertEquals(self.cart_view.item_count(), 3)
 
-        # now delete all items in cart and see what happens
         self.cart_view.action = 'download'
         output = self.cart_view._run_action()
-
         self.assertIn('foo.txt', output)
+
+        # now delete all items in cart, try to download contents again and
+        # see if we indeed don't get any output
+        self.cart_view.clear()
+        output = self.cart_view._run_action()
+        self.assertIsNone(output)
 
     def test_copy(self):
         """Test if 'copy' cart action writes correct copydata to a cookie.
