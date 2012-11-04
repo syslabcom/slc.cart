@@ -33,20 +33,19 @@ After successful installation two changes immediately become visible:
 
 * In site's ``portal_actions`` menu a link to Cart becomes available. This
   link also displays the current number of items in cart (in parentheses).
-  TODO: image here
-  .. image:: images/portal_actions.png
+
+  .. image:: docs/images/portal_actions.png
 
 * ``Add to Cart`` / ``Remove from Cart`` link appears in document byline of
   the objects, for which the link is applicable.
-  TODO: image here
-  .. image:: images/document_byline.png
+
+  .. image:: docs/images/document_byline.png
 
 The link in ``portal_actions`` points to a new ``@@cart view``, which lists
 the curent cart contents and provides links to various actions that can be
 performed in batch on the items in cart.
 
-TODO: image here (links...)
-.. image:: images/cart_actions.png
+.. image:: docs/images/cart_actions.png
 
 List of Actions
 ---------------
