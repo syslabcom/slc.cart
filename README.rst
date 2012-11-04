@@ -51,19 +51,32 @@ List of Actions
 ---------------
 
 ``Copy``
-  TODO: describe
+  Add items in cart to clipboard. This is similar to Plone's `copy` operation
+  with the advantage that the items (obejcts) being copied do not have to
+  reside in the same container, they can be scattered all over the site.
 
 ``Cut``
-  TODO: describe .. similar to copy
+  Very similar to `Copy` action, but items in cart are `cut` to clipboard
+  instead. The difference becomes apparent on subsequent `Paste` operation -
+  if the items have been cut, they will be removed from their original
+  containers, while the copy operation would not touch the original object
+  instances in their containers.
 
 ``Download``
-  TODO: describe ... and only "downloadable" stuff gets downloaded
+  Download all items currently in cart (packed in a ZIP archive).
+
+  NOTE: Only the items that are "downloadable" will be included in the
+  archive. For example images, PDF documents and other files are all fine,
+  while content types such as News Items and Folders will be skipped.
 
 ``Delete``
-  TODO: describe
+  Delete all items that are currently in cart from the portal. Also empty the
+  cart iteslf along the way. Be careful though to not accidentally delete
+  something you really didn't intend to.
 
 ``Clear Cart``
-  TODO: describe .. removes all items from cart without affecting them
+  This one is self-explanatory. Remove all items from cart so that it becomes
+  empty, while not affecting the items themselves in any way.
 
 
 Known Issues and TODOs
