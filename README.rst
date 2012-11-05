@@ -2,12 +2,12 @@
 Cart-like end-user support for batching
 =======================================
 
-An add-on for batch processing of objects in aPlone site. Objects can be added
+An add-on for batch processing of objects in a Plone site. Objects can be added
 to a "cart" and then various batch actions can be perfomed on them with a
 single click, such as download, delete and copy.
 
 * `Source code @ GitHub <http://github.com/syslabcom/slc.cart>`_
-* `Releases @ PyPI <http://pypi.python.org/pypi/slc.car>`_
+* `Releases @ PyPI <http://pypi.python.org/pypi/slc.cart>`_
 * `Continuous Integration @ Travis-CI
   <http://travis-ci.org/syslabcom/slc.cart>`_
 
@@ -47,7 +47,7 @@ List of Actions
 
 ``Copy``
   Add items in cart to clipboard. This is similar to Plone's `copy` operation
-  with the advantage that items (obejcts) being copied do not have to reside in
+  with the advantage that items (objects) being copied do not have to reside in
   the same container, they can be scattered all over the site.
 
 ``Cut``
@@ -66,7 +66,7 @@ List of Actions
 
 ``Delete``
   Delete all items that are currently in cart from the portal. Also empty the
-  cart iteslf along the way. Be careful not to accidentally delete something
+  cart itself along the way. Be careful not to accidentally delete something
   you really didn't intend to.
 
 ``Clear Cart``
