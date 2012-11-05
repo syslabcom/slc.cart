@@ -1,59 +1,54 @@
-=============
-slc.cart
-=============
+=======================================
+Cart-like end-user support for batching
+=======================================
 
-:Framework: `Plone 4.2 <http://plone.org>`_
-:Bug tracker: https://github.com/syslabcom/slc.cart/issues
-:Source: https://github.com/syslabcom/slc.cart
-:Documentation:
-:Code status:
+An add-on for batch processing of objects in aPlone site. Objects can be added
+to a "cart" and then various batch actions can be perfomed on them with a
+single click, such as download, delete and copy.
 
-    .. image:: http://travis-ci.org/niteoweb/slc.cart.png
-       :align: left
-       :target: http://travis-ci.org/niteoweb/slc.cart
-
-.. topic:: Summary
-
-    A module for batch processing the objects in Plone site. Objects can be
-    added to cart and then various batch actions can be perfomed on them with
-    a single click, such as download, delete and copy.
-
+* `Source code @ GitHub <http://github.com/syslabcom/slc.cart>`_
+* `Releases @ PyPI <http://pypi.python.org/pypi/slc.car>`_
+* `Continuous Integration @ Travis-CI
+  <http://travis-ci.org/syslabcom/slc.cart>`_
 
 
 Installation
 ============
 
-To install ``slc.cart`` ... TODO:
+To install ``slc.cart`` you simply add ``slc.cart`` to the list of eggs in your
+buildout, run buildout and restart Plone. Then, install `slc.cart` using the
+Add-ons control panel.
 
 
-Basic usage
-===========
+Usage
+=====
 
 After successful installation two changes immediately become visible:
 
-* In site's ``portal_actions`` menu a link to Cart becomes available. This
-  link also displays the current number of items in cart (in parentheses).
+* In site's `Personal tools` menu a link to Cart becomes available. This link
+  also displays the current number of items in cart (in parentheses).
 
-  .. image:: docs/images/portal_actions.png
+  .. image:: https://github.com/syslabcom/slc.cart/raw/master/docs/images/portal_actions.png
 
-* ``Add to Cart`` / ``Remove from Cart`` link appears in document byline of
-  the objects, for which the link is applicable.
+* ``Add to Cart`` / ``Remove from Cart`` links appear in document byline of
+  those objects, for which the link is applicable.
 
-  .. image:: docs/images/document_byline.png
+  .. image:: https://github.com/syslabcom/slc.cart/raw/master/docs/images/document_byline.png
 
-The link in ``portal_actions`` points to a new ``@@cart view``, which lists
-the curent cart contents and provides links to various actions that can be
-performed in batch on the items in cart.
+The link in `Personal tools` menu points to a new ``@@cart`` view, which lists
+the curent Cart contents and provides links to various actions that can be
+performed in batch on all items in Cart.
 
-.. image:: docs/images/cart_actions.png
+.. image:: https://github.com/syslabcom/slc.cart/raw/master/docs/images/cart_actions.png
+
 
 List of Actions
 ---------------
 
 ``Copy``
   Add items in cart to clipboard. This is similar to Plone's `copy` operation
-  with the advantage that the items (obejcts) being copied do not have to
-  reside in the same container, they can be scattered all over the site.
+  with the advantage that items (obejcts) being copied do not have to reside in
+  the same container, they can be scattered all over the site.
 
 ``Cut``
   Very similar to `Copy` action, but items in cart are `cut` to clipboard
@@ -65,22 +60,25 @@ List of Actions
 ``Download``
   Download all items currently in cart (packed in a ZIP archive).
 
-  NOTE: Only the items that are "downloadable" will be included in the
-  archive. For example images, PDF documents and other files are all fine,
-  while content types such as News Items and Folders will be skipped.
+  NOTE: Only items that are "downloadable" will be included in the archive. For
+  example images, PDF documents and other files are all fine, while content
+  types such as News Items and Folders will be skipped.
 
 ``Delete``
   Delete all items that are currently in cart from the portal. Also empty the
-  cart iteslf along the way. Be careful though to not accidentally delete
-  something you really didn't intend to.
+  cart iteslf along the way. Be careful not to accidentally delete something
+  you really didn't intend to.
 
 ``Clear Cart``
   This one is self-explanatory. Remove all items from cart so that it becomes
-  empty, while not affecting the items themselves in any way.
+  empty, while not affecting items themselves in any way.
 
 
-Known Issues and TODOs
-======================
+Providing a custom action
+-------------------------
 
-* Localization support
-* Testing in a production environment
+You can provide your own Cart action in your own package by creating an adapter
+for ``ISiteRoot`` that provides the ``ICartAction`` interface. All actions
+in `slc.cart` are already made this way so take them as a point of reference.
+
+

@@ -168,7 +168,6 @@ class TestCart(IntegrationTestCase):
         """
         self.portal.REQUEST["HTTP_X_REQUESTED_WITH"] = "XMLHttpRequest"
 
-        # TODO: also test response when an error occurs on the server
         response_dict = {"status": STATUS.OK,
                          "body": None,
                          "err_info": None, }

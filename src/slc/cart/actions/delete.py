@@ -6,10 +6,6 @@ from plone import api
 from Products.CMFCore.interfaces import ISiteRoot
 from slc.cart.interfaces import ICartAction
 
-import logging
-
-logger = logging.getLogger("slc.cart")
-
 NAME = 'delete'
 TITLE = u'Delete'
 WEIGHT = 20

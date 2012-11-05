@@ -50,10 +50,10 @@ class CutAction(grok.Adapter):
                 continue
 
             if obj.wl_isLocked():
-                continue  # TODO: write to log? error?
+                continue
 
             if not obj.cb_isMoveable():
-                continue  # TODO: write to log? error?
+                continue
 
             m = Moniker(obj)
             obj_list.append(m.dump())
