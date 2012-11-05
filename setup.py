@@ -19,7 +19,7 @@ long_description = \
 setup(
     name='slc.cart',
     version='1.0',
-    description="Enter description of what this project is all about.",
+    description="Cart-like end-user support for batching.",
     long_description=long_description,
     # Get more from http://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
