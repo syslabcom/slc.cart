@@ -18,7 +18,7 @@ import json
 import logging
 
 logger = logging.getLogger("slc.cart")
-grok.templatedir('.')
+grok.templatedir('templates')
 
 STATUS = namedtuple('STATUS', ['OK', 'ERROR'])(*range(2))
 """Response status codes."""
