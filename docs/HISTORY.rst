@@ -1,6 +1,13 @@
 Changelog
 =========
 
+1.1 (2012-11-13)
+----------------
+
+- Support for newer versions of grokcore.* packages.
+  [zupo]
+
+
 1.0.1 (2012-11-05)
 ------------------
 
