@@ -12,6 +12,4 @@ script:
  
 notifications:
   irc:
-    - "irc.freenode.org#niteoweb"
-  email:
-    - maintenance@niteoweb.com
+    - "irc.freenode.org#syslabcom"
