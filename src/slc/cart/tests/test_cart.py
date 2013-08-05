@@ -355,7 +355,7 @@ class TestCartTraversal(FunctionalTestCase):
     def test_traverse_to_action(self):
         """Test traversing to a ICartAction."""
         self.browser.open('http://nohost/plone/@@cart/delete')
-        self.assertIn('All items in cart were successfully deleted.',
+        self.assertIn('The following items have been deleted:',
                       self.browser.contents)
 
 
