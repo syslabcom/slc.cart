@@ -25,19 +25,21 @@ class DeleteAction(grok.Adapter):
         """Delete all items currently in cart and clear the cart's contents."""
         cart_view = self.context.restrictedTraverse('cart')
         request = self.context.REQUEST
-        cart = cart_view.cart
 
-        for obj_uuid in cart:
-            obj = api.content.get(UID=obj_uuid)
+        handled = list()
+        for item in cart_view.items:
+            obj = api.content.get(UID=item['UID'])
             if obj is None:
                 # An object that is in cart was apparently deleted by someone
                 # else and dosn't exist anymore, so there's nothing to do.
                 continue
             api.content.delete(obj)
+            handled.append('"%s"' % item['Title'])
 
         api.portal.show_message(
-            message="All items in cart were successfully deleted.",
+            message="The following items have been deleted: %s" % ', '.join(
+                sorted(handled)),
             request=request,
-            type="info")
+            type="success")
 
         cart_view.clear()
