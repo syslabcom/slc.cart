@@ -25,6 +25,12 @@ class DeleteAction(grok.Adapter):
         """Delete all items currently in cart and clear the cart's contents."""
         cart_view = self.context.restrictedTraverse('cart')
         request = self.context.REQUEST
+        if len(cart_view.items) == 0:
+            api.portal.show_message(
+                message="You did not select any documents. Nothing was done.",
+                request=request,
+                type="warning")
+            return
 
         handled = list()
         for item in cart_view.items:
