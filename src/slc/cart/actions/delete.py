@@ -30,6 +30,7 @@ class DeleteAction(grok.Adapter):
                 message="You did not select any documents. Nothing was done.",
                 request=request,
                 type="warning")
+            cart_view.clear()
             return
 
         handled = list()
