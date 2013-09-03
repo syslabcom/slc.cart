@@ -1,7 +1,7 @@
 Changelog
 =========
 
-1.1-P2-3 (unreleased)
+1.1-P2-3 (2013-09-03)
 ---------------------
 
 - Nothing changed yet.
