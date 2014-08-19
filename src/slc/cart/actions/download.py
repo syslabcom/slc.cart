@@ -69,7 +69,7 @@ class DownloadAction(grok.Adapter):
             )
             request.response.setHeader(
                 'Content-Disposition',
-                "attachment; filename=CartContents.zip"
+                "attachment; filename=download.zip"
             )
             return output.getvalue()
         else:
