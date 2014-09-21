@@ -4,10 +4,24 @@
 from five import grok
 from plone import api
 from Products.CMFCore.interfaces import ISiteRoot
+from slc.cart import HAS_DEXTERITYCONTENTTYPES
 from slc.cart.interfaces import ICartAction
 from StringIO import StringIO
 
 import zipfile
+
+if HAS_DEXTERITYCONTENTTYPES:
+    from plone.app.contenttypes.interfaces import IFile
+    from plone.app.contenttypes.interfaces import IImage
+else:
+    from zope.interface import Interface
+
+    class IFile(Interface):
+        pass
+
+    class IImage(Interface):
+        pass
+
 
 NAME = 'download'
 TITLE = u'Download'
@@ -53,12 +67,20 @@ class DownloadAction(grok.Adapter):
                 if obj is None:
                     continue
 
-                # make sure obj is a file by checking if filename is set
-                filename = obj.getFilename()
-                if not filename:
-                    continue
+                if IFile.providedBy(obj):
+                    filename = obj.file.filename
+                    data = obj.file.data
+                elif IImage.providedBy(obj):
+                    filename = obj.image.filename
+                    data = obj.image.data
+                else:
+                    # make sure obj is a file by checking if filename is set
+                    filename = obj.getFilename()
+                    if not filename:
+                        continue
+                    data = obj.data
 
-                zf.writestr(filename, obj.data)
+                zf.writestr(filename, data)
         finally:
             zf.close()
 
