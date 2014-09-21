@@ -12,3 +12,5 @@ lib
 local
 parts
 var
+*.pyc
+*egg-info
