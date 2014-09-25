@@ -53,12 +53,18 @@ class DownloadAction(grok.Adapter):
                 if obj is None:
                     continue
 
-                # make sure obj is a file by checking if filename is set
-                filename = obj.getFilename()
-                if not filename:
-                    continue
+                # check if this is a document and potentially has a pdf set
+                if obj.portal_type == "Document" and obj.restrictedTraverse('pdf', None):
+                    data = obj.restrictedTraverse('pdf')()
+                    filename = '%s.pdf' % obj.getId()
+                else:
+                    # make sure obj is a file by checking if filename is set
+                    filename = obj.getFilename()
+                    if not filename:
+                        continue
+                    data = obj.data
 
-                zf.writestr(filename, obj.data)
+                zf.writestr(filename, data)
         finally:
             zf.close()
 
