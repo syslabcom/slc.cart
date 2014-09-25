@@ -1,8 +1,8 @@
 Changelog
 =========
 
-1.1-P2-4 (unreleased)
----------------------
+1.1-P4 (2014-09-25)
+-------------------
 
 - #8896 changed file name to download.zip, refs #8896 [reinhardt]
 
