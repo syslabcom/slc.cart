@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """A Cart Action for downloading all items listed in cart as a ZIP file."""
 
+from datetime import datetime
 from five import grok
 from plone import api
 from Products.CMFCore.interfaces import ISiteRoot
@@ -73,9 +74,11 @@ class DownloadAction(grok.Adapter):
                 "Content-Type",
                 "application/zip"
             )
+            now = datetime.now()
+            zipfilename = "download-%s-%s-%s.zip" % (now.year, now.month, now.day)
             request.response.setHeader(
                 'Content-Disposition',
-                "attachment; filename=download.zip"
+                "attachment; filename=%s" % zipfilename
             )
             return output.getvalue()
         else:
