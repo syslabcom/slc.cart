@@ -335,25 +335,16 @@ class TestCartTraversal(FunctionalTestCase):
 
     def test_non_existent_action(self):
         """Test NotFound raised when traversing to a non-existent action."""
-        # with plone.protect this does not show the 404 page but the CSRF
+        # with certain setups this does not show the 404 page but the CSRF
         # confirmation page
         try:
-            import plone.protect
-        except ImportError:
-            with_protect = False
-        else:
-            plone.protect  # pyflakes
-            with_protect = True
-
-        if with_protect:
             self.browser.open('http://nohost/plone/@@cart/foo')
-            self.assertIn('Verify you just performed an action',
+        except HTTPError:
+            self.assertIn('This page does not seem to exist',
                           self.browser.contents)
         else:
-            with self.assertRaises(HTTPError):
-                self.browser.open('http://nohost/plone/@@cart/foo')
-                self.assertIn('This page does not seem to exist',
-                              self.browser.contents)
+            self.assertIn('Verify you just performed an action',
+                          self.browser.contents)
 
     def test_traverse_to_method(self):
         """Test traversing to a @@cart method.
