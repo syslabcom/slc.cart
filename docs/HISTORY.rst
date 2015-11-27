@@ -1,10 +1,10 @@
 Changelog
 =========
 
-1.1-P5.2 (unreleased)
----------------------
+1.2 (2015-11-27)
+----------------
 
-- Nothing changed yet.
+- fixed Document pdf download, refs #12760 [reinhardt]
 
 
 1.1-P5.1 (2014-10-01)
