@@ -5,7 +5,6 @@ from datetime import datetime
 from five import grok
 from plone import api
 from Products.CMFCore.interfaces import ISiteRoot
-from Products.CMFPlone.utils import safe_unicode
 from slc.cart.interfaces import ICartAction
 from StringIO import StringIO
 
