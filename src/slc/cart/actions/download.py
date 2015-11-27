@@ -5,6 +5,7 @@ from datetime import datetime
 from five import grok
 from plone import api
 from Products.CMFCore.interfaces import ISiteRoot
+from Products.CMFPlone.utils import safe_unicode
 from slc.cart.interfaces import ICartAction
 from StringIO import StringIO
 
@@ -57,6 +58,14 @@ class DownloadAction(grok.Adapter):
                 # check if this is a document and potentially has a pdf set
                 if obj.portal_type == "Document" and obj.restrictedTraverse('pdf', None):
                     data = obj.restrictedTraverse('pdf')()
+                    if obj.REQUEST.response.status != 200:
+                        if obj.REQUEST.response.status == 302:
+                            del obj.REQUEST.response.headers['location']
+                        obj.REQUEST.response.status = 200
+                        # ignore and continue - showing a portal message here is
+                        # useless as we probably won't return html
+                        continue
+                    data = data.read()
                     filename = '%s.pdf' % obj.getId()
                 else:
                     # make sure obj is a file by checking if filename is set
