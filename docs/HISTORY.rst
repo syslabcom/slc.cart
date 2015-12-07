@@ -4,7 +4,7 @@ Changelog
 1.3 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Use OOSet so that cart is properly persisted, refs #12858 [reinhardt]
 
 
 1.2 (2015-11-27)

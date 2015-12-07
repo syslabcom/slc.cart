@@ -4,6 +4,7 @@
 from collections import namedtuple
 from five import grok
 from plone import api
+from BTrees.OOBTree import OOSet
 from Products.CMFCore.interfaces import IContentish
 from Products.CMFCore.interfaces import ISiteRoot
 from slc.cart.interfaces import ICartAction
@@ -72,7 +73,7 @@ class Cart(grok.View):
         """
         # get the zope.annotations object stored on current member object
         annotations = IAnnotations(api.user.get_current())
-        return annotations.setdefault('cart', set())
+        return annotations.setdefault('cart', OOSet())
 
     def _get_brain_by_UID(self, UID):
         """Return portal_catalog brains metadata of an item with the specified
@@ -160,7 +161,7 @@ class Cart(grok.View):
         :return: redirect to @@cart
         """
         annotations = IAnnotations(api.user.get_current())
-        annotations['cart'] = set()
+        annotations['cart'] = OOSet()
 
         api.portal.show_message(
             message="Cart cleared.",
