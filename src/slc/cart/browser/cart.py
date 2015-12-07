@@ -35,6 +35,14 @@ ALLOWED_VIA_URL = [
 """Attributes that we allow to be traversable via URL."""
 
 
+class CartSet(OOSet):
+    """Implements some methods missing from OOSet regarding the set API."""
+
+    def discard(self, item):
+        if item in self:
+            self.remove(item)
+
+
 class Cart(grok.View):
     """A BrowserView for listing items in cart."""
 
@@ -73,7 +81,7 @@ class Cart(grok.View):
         """
         # get the zope.annotations object stored on current member object
         annotations = IAnnotations(api.user.get_current())
-        return annotations.setdefault('cart', OOSet())
+        return annotations.setdefault('cart', CartSet())
 
     def _get_brain_by_UID(self, UID):
         """Return portal_catalog brains metadata of an item with the specified
@@ -161,7 +169,7 @@ class Cart(grok.View):
         :return: redirect to @@cart
         """
         annotations = IAnnotations(api.user.get_current())
-        annotations['cart'] = OOSet()
+        annotations['cart'] = CartSet()
 
         api.portal.show_message(
             message="Cart cleared.",
