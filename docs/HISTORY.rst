@@ -1,6 +1,12 @@
 Changelog
 =========
 
+1.3 (unreleased)
+----------------
+
+- Nothing changed yet.
+
+
 1.3b1 (2015-12-07)
 ------------------
 
