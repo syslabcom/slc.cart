@@ -36,4 +36,17 @@
         provides="Products.GenericSetup.interfaces.EXTENSION"
         />
 
+    <genericsetup:upgradeSteps
+        source="1"
+        destination="2"
+        profile="slc.cart:default">
+
+        <genericsetup:upgradeStep
+            title="Migrate to CartSet"
+            description="Use persistent CartSet instead of regular set"
+            handler=".upgrades.migrate_to_cartset"
+            />
+
+    </genericsetup:upgradeSteps>
+
 </configure>
