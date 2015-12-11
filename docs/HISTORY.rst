@@ -1,10 +1,10 @@
 Changelog
 =========
 
-1.3 (unreleased)
+1.3 (2015-12-11)
 ----------------
 
-- Nothing changed yet.
+- added upgrade step [reinhardt]
 
 
 1.3b2 (2015-12-07)
