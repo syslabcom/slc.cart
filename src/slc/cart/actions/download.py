@@ -4,6 +4,7 @@
 from datetime import datetime
 from five import grok
 from plone import api
+from Products.ATContentTypes.interfaces.interfaces import IATContentType
 from Products.CMFCore.interfaces import ISiteRoot
 from slc.cart.interfaces import ICartAction
 from StringIO import StringIO
@@ -68,10 +69,15 @@ class DownloadAction(grok.Adapter):
                     filename = '%s.pdf' % obj.getId()
                 else:
                     # make sure obj is a file by checking if filename is set
-                    filename = obj.getFilename()
-                    if not filename:
-                        continue
-                    data = obj.data
+                    if IATContentType.providedBy(obj):
+                        filename = obj.getFilename()
+                        if not filename:
+                            continue
+                        data = obj.data
+                    else:
+                        blobfile = obj.file
+                        filename = blobfile.filename
+                        data = blobfile.data
 
                 zf.writestr(filename, data)
         finally:
