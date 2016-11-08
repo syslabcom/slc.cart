@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """A Cart Action for downloading all items listed in cart as a ZIP file."""
 
+from Products.ATContentTypes.interfaces.interfaces import IATContentType
+from Products.CMFCore.interfaces import ISiteRoot
+from StringIO import StringIO
 from datetime import datetime
 from five import grok
 from plone import api
-from Products.ATContentTypes.interfaces.interfaces import IATContentType
-from Products.CMFCore.interfaces import ISiteRoot
 from slc.cart.interfaces import ICartAction
-from StringIO import StringIO
 
 import zipfile
 
