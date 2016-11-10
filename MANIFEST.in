@@ -1,2 +1,6 @@
 graft src/slc
 include *.cfg *.rst *.in
+include *.py
+include *.sh
+recursive-include docs *.png
+recursive-include docs *.rst
