@@ -1,7 +1,7 @@
 Changelog
 =========
 
-1.4 (unreleased)
+1.4 (2016-11-10)
 ----------------
 
 - Add dexterity support [cillianderoiste]
