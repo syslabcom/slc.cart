@@ -18,7 +18,7 @@ long_description = \
 
 setup(
     name='slc.cart',
-    version='1.4',
+    version='1.5.dev0',
     description="Cart-like end-user support for batching.",
     long_description=long_description,
     # Get more from http://pypi.python.org/pypi?%3Aaction=list_classifiers
