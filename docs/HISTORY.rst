@@ -4,7 +4,7 @@ Changelog
 1.4 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Add dexterity support [cillianderoiste]
 
 
 1.3 (2015-12-11)
