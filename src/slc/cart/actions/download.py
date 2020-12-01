@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """A Cart Action for downloading all items listed in cart as a ZIP file."""
 
-from Products.ATContentTypes.interfaces.interfaces import IATContentType
 from Products.CMFCore.interfaces import ISiteRoot
 from StringIO import StringIO
 from datetime import datetime
@@ -69,15 +68,9 @@ class DownloadAction(grok.Adapter):
                     filename = '%s.pdf' % obj.getId()
                 else:
                     # make sure obj is a file by checking if filename is set
-                    if IATContentType.providedBy(obj):
-                        filename = obj.getFilename()
-                        if not filename:
-                            continue
-                        data = obj.data
-                    else:
-                        blobfile = obj.file
-                        filename = blobfile.filename
-                        data = blobfile.data
+                    blobfile = obj.file
+                    filename = blobfile.filename
+                    data = blobfile.data
 
                 zf.writestr(filename, data)
         finally:
